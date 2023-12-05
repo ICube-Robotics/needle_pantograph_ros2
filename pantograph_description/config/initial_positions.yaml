@@ -1,0 +1,6 @@
+initial_positions:
+  panto_left_joint: 0.0
+  panto_left_joint2: 0.0
+  panto_right_joint: 0.0
+  panto_right_joint2: 0.0
+  panto_tool_joint: 0.0
