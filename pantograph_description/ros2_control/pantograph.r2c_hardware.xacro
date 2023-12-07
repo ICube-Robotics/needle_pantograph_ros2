@@ -1,53 +1,97 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro
-        name="panto_r2c_hardware"
-        params="name initial_positions_file use_sim:=^|false use_fake_hardware:=^|true" >
+  <xacro:macro
+      name="panto_r2c_hardware"
+      params="name initial_positions_file use_sim:=^|false command_interface:=^|force use_fake_hardware:=^|true ec_config_package:=^|pantograph_description" >
 
-        <xacro:property name="initial_positions" value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"/>
+    <xacro:property name="initial_positions" value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"/>
 
+    <ros2_control name="${name}" type="system">
+
+      <xacro:if value="${use_sim}">
         <hardware>
-            <plugin>mock_components/GenericSystem</plugin>
+          <plugin>gazebo_ros2_control/GazeboSystem</plugin>
         </hardware>
+      </xacro:if>
+      <xacro:unless value="${use_sim}">
+          <hardware>
+          <xacro:if value="${use_fake_hardware}">
+            <plugin>mock_components/GenericSystem</plugin>
+          </xacro:if>
+          <xacro:unless value="${use_fake_hardware}">
+            <plugin>ethercat_driver/EthercatDriver</plugin>
+            <param name="master_id">0</param>
+            <param name="control_frequency">100</param>
+          </xacro:unless>
+          </hardware>
+      </xacro:unless>
 
-        <!-- Actual joints (i.e., motors) -->
-        <joint name="panto_left_joint">
-            <command_interface name=${command_interface} />
-            <state_interface name="force">
-                <param name="initial_value">0.0</param>
-                <param name="min">-100</param>
-                <param name="max">100</param>
-            </state_interface>
-            <state_interface name="position">
-                <param name="initial_value">0.7498</param>
-                <param name="min">-1.57</param>
-                <param name="max">1.57</param>
-            </state_interface>
-            <state_interface name="velocity">
-                <param name="initial_value">0.0</param>
-            </state_interface>
-        </joint>
+      <!-- Actual joints (i.e., motors) -->
+      <joint name="panto_left_joint">
 
-        <joint name="panto_right_joint">
-            <command_interface name=${command_interface} />
-            <state_interface name="force">
-                <param name="initial_value">0.0</param>
-                <param name="min">-100</param>
-                <param name="max">100</param>
-            </state_interface>
-            <state_interface name="position">
-                <param name="initial_value">0.7498</param>
-                <param name="min">-1.57</param>
-                <param name="max">1.57</param>
-            </state_interface>
-            <state_interface name="velocity">
-                <param name="initial_value">0.0</param>
-            </state_interface>
-        </joint>
+        <command_interface name="${command_interface}" />
 
-        <!-- Mock joints used for visualization -->
+        <state_interface name="force">
+          <param name="initial_value">0.0</param>
+          <param name="min">-100</param>
+          <param name="max">100</param>
+        </state_interface>
+
+        <state_interface name="position">
+          <param name="initial_value">0.7498</param>
+          <param name="min">-1.57</param>
+          <param name="max">1.57</param>
+        </state_interface>
+
+        <state_interface name="velocity">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+
+        <xacro:unless value="$(arg use_sim)">
+          <xacro:unless value="${use_fake_hardware}">
+            <ec_module name="left_motor_encoder">
+              <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+              <param name="alias"> 0 </param>
+              <param name="position"> 2 </param>
+              <param name="slave_config">$(find ${ec_config_package})/config/beckhoff_el5101.yaml</param>
+            </ec_module>
+          </xacro:unless>
+        </xacro:unless>
+
+      </joint>
+
+      <joint name="panto_right_joint">
+          <command_interface name="${command_interface}"/>
+          <state_interface name="force">
+              <param name="initial_value">0.0</param>
+              <param name="min">-100</param>
+              <param name="max">100</param>
+          </state_interface>
+          <state_interface name="position">
+              <param name="initial_value">0.7498</param>
+              <param name="min">-1.57</param>
+              <param name="max">1.57</param>
+          </state_interface>
+          <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+          </state_interface>
+
+          <xacro:unless value="$(arg use_sim)">
+            <xacro:unless value="${use_fake_hardware}">
+              <ec_module name="right_motor_encoder">
+                <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                <param name="alias"> 0 </param>
+                <param name="position"> 1 </param>
+                <param name="slave_config">$(find ${ec_config_package})/config/beckhoff_el5101.yaml</param>
+              </ec_module>
+            </xacro:unless>
+          </xacro:unless>
+
+      </joint>
+
+      <!-- Mock joints used for visualization -->
 
     </ros2_control>
-</xacro:macro>
+  </xacro:macro>
 </robot>

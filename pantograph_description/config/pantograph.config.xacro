@@ -13,11 +13,11 @@
     <xacro:include filename="$(find pantograph_description)/urdf/pantograph.urdf.xacro" />
 
     <!-- Import pantograph ros2_control description -->
-    <xacro:include filename="$(find pantograph_description)/ros2_control/pantograph.ros2_control.urdf" />
+    <xacro:include filename="$(find pantograph_description)/ros2_control/pantograph.r2c_hardware.xacro" />
 
     <!-- Import pantograph, fixed w.r.t. "world" frame -->
     <link name="world"/>
-    <xacro:pantograph parent="world" prefix="$(arg prefix)">
+    <xacro:pantograph parent="world">
         <origin xyz="0 0 0" rpy="0 0 0"/>
     </xacro:pantograph>
 
