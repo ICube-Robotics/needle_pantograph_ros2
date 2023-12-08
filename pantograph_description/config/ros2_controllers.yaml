@@ -20,15 +20,15 @@ haptic_trajectory_controller:
       - force
       - position
     joints:
-      - panto_right_joint
-      - panto_left_joint
-      - panto_right_joint2
-      - panto_right_joint2
-      - panto_tool_joint
+      - panto_a1
+      - panto_a2
+      - panto_a3
+      - panto_a4
+      - panto_a5
 
 forward_effort_controller:
   ros__parameters:
     joints:
-      - panto_right_joint
-      - panto_left_joint
+      - panto_a1
+      - panto_a5
 
