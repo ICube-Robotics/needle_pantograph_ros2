@@ -1,0 +1,33 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 500  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    haptic_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    forward_effort_controller:
+      type: effort_controllers/JointGroupEffortController
+
+
+haptic_trajectory_controller:
+  ros__parameters:
+    command_interfaces:
+      - effort
+    state_interfaces:
+      - effort
+      - position
+    joints:
+      - panto_a1
+      - panto_a2
+      - panto_a3
+      - panto_a4
+      - panto_a5
+
+forward_effort_controller:
+  ros__parameters:
+    joints:
+      - panto_a1
+      - panto_a5

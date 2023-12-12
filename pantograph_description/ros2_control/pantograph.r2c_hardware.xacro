@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro
+      name="panto_r2c_hardware"
+      params="name initial_positions_file use_sim:=^|false command_interface:=^|effort use_fake_hardware:=^|true ec_config_package:=^|pantograph_description" >
+
+    <xacro:property name="initial_positions" value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"/>
+
+    <ros2_control name="${name}" type="system">
+
+      <xacro:if value="${use_sim}">
+        <hardware>
+          <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+      </xacro:if>
+      <xacro:unless value="${use_sim}">
+          <hardware>
+          <xacro:if value="${use_fake_hardware}">
+            <plugin>mock_components/GenericSystem</plugin>
+          </xacro:if>
+          <xacro:unless value="${use_fake_hardware}">
+            <plugin>ethercat_driver/EthercatDriver</plugin>
+            <param name="master_id">0</param>
+            <param name="control_frequency">100</param>
+          </xacro:unless>
+          </hardware>
+      </xacro:unless>
+
+      <!-- Actual joints (i.e., motors) -->
+      <joint name="panto_a1">
+        <command_interface name="${command_interface}" />
+        <state_interface name="effort">
+          <param name="initial_value">0.0</param>
+          <param name="min">-100</param>
+          <param name="max">100</param>
+        </state_interface>
+
+        <state_interface name="position">
+          <param name="initial_value">${1.57 + 0.5}</param>
+          <param name="min">-1.57</param>
+          <param name="max">1.57</param>
+        </state_interface>
+
+        <state_interface name="velocity">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+
+        <xacro:unless value="$(arg use_sim)">
+          <xacro:unless value="${use_fake_hardware}">
+            <ec_module name="left_motor_encoder">
+              <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+              <param name="alias"> 0 </param>
+              <param name="position"> 2 </param>
+              <param name="slave_config">$(find ${ec_config_package})/config/beckhoff_el5101_left.yaml</param>
+            </ec_module>
+            <ec_module name="left_motor_driver">
+              <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+              <param name="alias"> 0 </param>
+              <param name="position"> 3 </param>
+              <param name="slave_config">$(find ${ec_config_package})/config/beckhoff_el4134_left.yaml</param>
+            </ec_module>
+          </xacro:unless>
+        </xacro:unless>
+
+      </joint>
+
+      <joint name="panto_a5">
+          <command_interface name="${command_interface}"/>
+          <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+              <param name="min">-100</param>
+              <param name="max">100</param>
+          </state_interface>
+          <state_interface name="position">
+              <param name="initial_value">0.5</param>
+              <param name="min">-1.57</param>
+              <param name="max">1.57</param>
+          </state_interface>
+          <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+          </state_interface>
+
+          <xacro:unless value="$(arg use_sim)">
+            <xacro:unless value="${use_fake_hardware}">
+              <ec_module name="right_motor_encoder">
+                <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                <param name="alias"> 0 </param>
+                <param name="position"> 1 </param>
+                <param name="slave_config">$(find ${ec_config_package})/config/beckhoff_el5101_right.yaml</param>
+              </ec_module>
+              <ec_module name="right_motor_driver">
+                <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                <param name="alias"> 0 </param>
+                <param name="position"> 3 </param>
+                <param name="slave_config">$(find ${ec_config_package})/config/beckhoff_el4134_right.yaml</param>
+              </ec_module>
+            </xacro:unless>
+          </xacro:unless>
+      </joint>
+    </ros2_control>
+
+      <!-- Mock joints used for visualization -->
+
+    <ros2_control name="${name}_mock_joints" type="system">
+
+      <xacro:if value="${use_sim}">
+        <hardware>
+          <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+      </xacro:if>
+      <xacro:unless value="${use_sim}">
+        <hardware>
+          <plugin>mock_components/GenericSystem</plugin>
+        </hardware>
+      </xacro:unless>
+
+      <joint name="panto_a2">
+          <command_interface name="position"/>
+          <state_interface name="position">
+              <param name="initial_value">${-1.4}</param>
+              <param name="min">-1.57</param>
+              <param name="max">1.57</param>
+          </state_interface>
+      </joint>
+
+      <joint name="panto_a3">
+          <command_interface name="position"/>
+          <state_interface name="position">
+              <param name="initial_value">${- 1.57 - 0.5 + 1.4}</param>
+              <param name="min">-1.57</param>
+              <param name="max">1.57</param>
+          </state_interface>
+      </joint>
+
+      <joint name="panto_a4">
+          <command_interface name="position"/>
+          <state_interface name="position">
+              <param name="initial_value">${1.65}</param>
+              <param name="min">-1.57</param>
+              <param name="max">1.57</param>
+          </state_interface>
+      </joint>
+
+    </ros2_control>
+  </xacro:macro>
+</robot>

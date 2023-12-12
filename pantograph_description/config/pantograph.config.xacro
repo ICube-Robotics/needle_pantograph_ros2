@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="pantograph">
+
+    <!-- Enable setting arguments from the launch file -->
+    <xacro:arg name="use_sim" default="false" />
+    <xacro:arg name="use_fake_hardware" default="true" />
+    <xacro:arg name="command_interface" default="effort" />
+    <xacro:arg name="controllers_file" default="iiwa_controllers.yaml" />
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+
+    <!-- Import urdf file(s) -->
+    <xacro:include filename="$(find pantograph_description)/urdf/pantograph.urdf.xacro" />
+
+    <!-- Import pantograph ros2_control description -->
+    <xacro:include filename="$(find pantograph_description)/ros2_control/pantograph.r2c_hardware.xacro" />
+
+    <!-- Import pantograph, fixed w.r.t. "world" frame -->
+    <link name="world"/>
+    <xacro:pantograph parent="world">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:pantograph>
+
+    <!-- Setup hardware (ros2 control) -->
+    <xacro:panto_r2c_hardware
+        name="pantographRobot"
+        command_interface="$(arg command_interface)"
+        initial_positions_file="$(arg initial_positions_file)"
+        use_sim="$(arg use_sim)"
+        use_fake_hardware="$(arg use_fake_hardware)"
+    />
+
+</robot>
