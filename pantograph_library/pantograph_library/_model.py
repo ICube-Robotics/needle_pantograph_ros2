@@ -1,15 +1,15 @@
 import numpy as np
 
+
 class PantographModel:
-    # Static attributs
+    # Static attributes
     __a1 = 0.100
     __a2 = 0.165
-    __a3 = self.__a2
-    __a4 = self.__a1
     __a5 = 0.085
 
     def __init__(self):
-        pass
+        self.__a3 = self.__a2
+        self.__a4 = self.__a1
 
     @staticmethod
     def populate_all_angles(self, q):
@@ -72,7 +72,7 @@ class PantographModel:
         q5 = q[1]
         # position of P2 and P4
         P2 = np.array([self.a1 * np.cos(q1), self.a1 * np.sin(q1)])
-        P4 = np.array([self.a4 * np.cos(q5) - self.a5, a4 * np.sin(q5)])
+        P4 = np.array([self.a4 * np.cos(q5) - self.a5, self.a4 * np.sin(q5)])
         x2, y2 = P2
         x4, y4 = P4
 
