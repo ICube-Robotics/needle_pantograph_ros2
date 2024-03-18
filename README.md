@@ -19,7 +19,8 @@ WS_PANTOGRAPH=~/dev/ws_pantograph_ros2/
 mkdir -p $WS_PANTOGRAPH/src
 cd $WS_PANTOGRAPH/src
 
-git clone https://github.com/ICube-Robotics/needle_pantograph_ros2.git
+# git clone https://github.com/ICube-Robotics/needle_pantograph_ros2.git
+git clone https://github.com/BlackSnow-333/needle_pantograph_ros2.git
 vcs import . < needle_pantograph_ros2/needle_pantograph_ros2.repos
 rosdep install --ignore-src --from-paths . -y -r
 
