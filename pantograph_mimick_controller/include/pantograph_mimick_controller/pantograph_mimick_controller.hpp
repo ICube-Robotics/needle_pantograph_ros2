@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "controller_interface/controller_interface.hpp"
@@ -80,6 +81,9 @@ protected:
 
   std::shared_ptr<ParamListener> param_listener_;
   Params params_;
+
+  std::unordered_map<std::string, std::unordered_map<std::string, double>> name_if_value_mapping_;
+  std::vector<std::string> pantograph_joint_names_;
 
   pantograph_library::PantographModel pantograph_model_;
 };

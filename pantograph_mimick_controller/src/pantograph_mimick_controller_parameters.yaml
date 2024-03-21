@@ -4,16 +4,44 @@ pantograph_mimick_controller:
     default_value: "",
     description: "Model prefix, none by default.",
   }
-
-  model: {
-    link_lengths: {
-      type: double_array,
-      default_value: [0.1, 0.165, 0.165, 0.1, 0.085],
-      description: "Length of the pantograph links in the form [l1, l2, l3, l4, l5]",
+  model_parameters:
+    l_a1: {
+      type: double,
+      default_value: 0.1,
+      description: "Length of the first link of the pantograph.",
       validation: {
         gt<>: [0],
-        fixed_size<>: [5],
       }
     }
-
-  }
+    l_a2: {
+      type: double,
+      default_value: 0.165,
+      description: "Length of the second link of the pantograph.",
+      validation: {
+        gt<>: [0],
+      }
+    }
+    l_a3: {
+      type: double,
+      default_value: 0.165,
+      description: "Length of the third link of the pantograph.",
+      validation: {
+        gt<>: [0],
+      }
+    }
+    l_a4: {
+      type: double,
+      default_value: 0.1,
+      description: "Length of the fourth link of the pantograph.",
+      validation: {
+        gt<>: [0],
+      }
+    }
+    l_a5: {
+      type: double,
+      default_value: 0.085,
+      description: "Length of the fifth link of the pantograph.",
+      validation: {
+        gt<>: [0],
+      }
+    }
