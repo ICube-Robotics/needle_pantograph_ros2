@@ -1,0 +1,8 @@
+<library path="pantograph_mimick_controller">
+  <class name="pantograph_mimick_controller/PantographMimickController" type="pantograph_mimick_controller::PantographMimickController" base_class_type="controller_interface::ControllerInterface">
+  <description>
+    Mimic pantograph controller used to populate the hardware interface of passive joints.
+    Used for visualization purposes.
+  </description>
+  </class>
+</library>
