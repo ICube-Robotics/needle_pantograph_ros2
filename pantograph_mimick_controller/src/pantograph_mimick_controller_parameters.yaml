@@ -1,0 +1,19 @@
+pantograph_mimick_controller:
+  prefix: {
+    type: string,
+    default_value: "",
+    description: "Model prefix, none by default.",
+  }
+
+  model: {
+    link_lengths: {
+      type: double_array,
+      default_value: [0.1, 0.165, 0.165, 0.1, 0.085],
+      description: "Length of the pantograph links in the form [l1, l2, l3, l4, l5]",
+      validation: {
+        gt<>: [0],
+        fixed_size<>: [5],
+      }
+    }
+
+  }
