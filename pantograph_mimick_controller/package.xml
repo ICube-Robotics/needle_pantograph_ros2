@@ -9,7 +9,15 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend> pantograph_library</depend>
+  <depend>pantograph_library</depend>
+
+  <depend>backward_ros</depend>
+  <depend>controller_interface</depend>
+  <depend>generate_parameter_library</depend>
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
