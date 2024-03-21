@@ -36,8 +36,7 @@ PantographModel::set_link_lenghts(
   double l_a4,
   double l_a5)
 {
-  if (l_a1 <= 0 || l_a2 <= 0 || l_a3 <= 0 || l_a4 <= 0 || l_a5 <= 0)
-  {
+  if (l_a1 <= 0 || l_a2 <= 0 || l_a3 <= 0 || l_a4 <= 0 || l_a5 <= 0) {
     return false;
   }
   l_a1_ = l_a1;
