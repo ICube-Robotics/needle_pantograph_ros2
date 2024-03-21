@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PANTOGRAPH_LIBRARY__PANTOGRAPH_HPP_
-#define PANTOGRAPH_LIBRARY__PANTOGRAPH_HPP_
+#ifndef PANTOGRAPH_LIBRARY__PANTOGRAPH_MODEL_HPP_
+#define PANTOGRAPH_LIBRARY__PANTOGRAPH_MODEL_HPP_
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -68,4 +68,4 @@ protected:
 
 }  // namespace pantograph_library
 
-#endif  // PANTOGRAPH_LIBRARY__PANTOGRAPH_HPP_
+#endif  // PANTOGRAPH_LIBRARY__PANTOGRAPH_MODEL_HPP_

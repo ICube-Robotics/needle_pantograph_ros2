@@ -120,7 +120,7 @@ PantographModel::jacobian(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> q
 {
   (void) q;
   (void) q_dot;
-  // TODO
+  // TODO(tpoignonec): add jacobian computation
   throw std::logic_error("Function not yet implemented!");
   return Eigen::Matrix<double, 2, 2>::Zero();
 }

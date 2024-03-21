@@ -24,7 +24,7 @@ ament_python_install_package(
 #-----------------------------------------------------
 #   Export cpp library
 #-----------------------------------------------------
-add_library(${PROJECT_NAME} src/pantograph_model.cpp)
+add_library(${PROJECT_NAME} SHARED src/pantograph_model.cpp)
 
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -60,6 +60,14 @@ install(
   INCLUDES DESTINATION include
 )
 
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_include_directories(
+  include
+)
+ament_export_libraries(
+  ${PROJECT_NAME}
+)
+ament_export_targets(
+  export_${PROJECT_NAME}
+)
 ament_export_dependencies(Eigen3)
 ament_package()
