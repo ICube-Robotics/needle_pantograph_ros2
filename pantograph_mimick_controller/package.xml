@@ -1,22 +1,26 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>pantograph_library</name>
+  <name>pantograph_mimick_controller</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="thibault.poignonec@gmail.com">tpoignonec</maintainer>
+  <maintainer email="tpoignonec@unistra.fr">tpoignonec</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_python</buildtool_depend>
-  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
-  <depend>eigen</depend>
+  <depend>pantograph_library</depend>
+
+  <depend>backward_ros</depend>
+  <depend>controller_interface</depend>
+  <depend>generate_parameter_library</depend>
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-
-  <buildtool_export_depend>eigen3_cmake_module</buildtool_export_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
