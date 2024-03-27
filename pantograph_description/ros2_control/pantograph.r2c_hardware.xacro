@@ -142,6 +142,25 @@
           </state_interface>
       </joint>
 
+<!--Test of universal joint at end efector-->
+      <joint name="tool_pitch_joint">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">${0}</param>
+            <param name="min">-3</param>
+            <param name="max">3</param>
+          </state_interface>
+      </joint>
+
+    <joint name="tool_roll_joint">
+        <command_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">${0}</param>
+          <param name="min">-3</param>
+          <param name="max">3</param>
+        </state_interface>
+    </joint>
+
     </ros2_control>
   </xacro:macro>
 </robot>
