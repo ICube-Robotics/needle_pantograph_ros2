@@ -1,7 +1,6 @@
-/* To run tests go to pantograph_library dir then run:
-    cmake -S . -B build
-    cmake --build build
-    cd build && ctest */
+/* To run tests go to ws_pantograph dir then
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
+    cd build/pantograph_library/ && ctest*/
 
 #include <gtest/gtest.h>
 #include "pantograph_library/pantograph_model.hpp"
