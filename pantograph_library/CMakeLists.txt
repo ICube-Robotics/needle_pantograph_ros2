@@ -71,3 +71,40 @@ ament_export_targets(
 )
 ament_export_dependencies(Eigen3)
 ament_package()
+
+#-----------------------------------------------------
+# Config for using GoogleTest
+#-----------------------------------------------------
+
+include(FetchContent)
+fetchcontent_declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+fetchcontent_makeavailable(googletest)
+
+enable_testing()
+
+add_executable(
+  test_panto_model
+  tests/test_panto_model.cc
+)
+ament_target_dependencies(test_panto_model PUBLIC Eigen3)
+target_link_libraries(
+  test_panto_model
+  GTest::gtest_main
+  pantograph_library
+)
+
+include(GoogleTest)
+gtest_discover_tests(test_panto_model)
+
+# Add include folder
+# Where Google Test's .h files can be found.
+set(gtest_build_include_dirs
+  "${PROJECT_SOURCE_DIR}/include"
+  "${PROJECT_SOURCE_DIR}")
+include_directories(${gtest_build_include_dirs})
