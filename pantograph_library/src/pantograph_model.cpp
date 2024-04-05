@@ -67,12 +67,17 @@ PantographModel::fk(Eigen::Vector<double, 2> q)
 
   // Coordinates of P3 with respect to P1
   double dist_A2_to_A4 = (p_at_A2 - p_at_A4).norm();
-  double P2Ph =
-    (std::pow(
-      l_a2_,
-      2) - std::pow(l_a3_, 2) + std::pow(dist_A2_to_A4, 2)) / (2 * dist_A2_to_A4);
-  Eigen::Vector2d Ph = p_at_A2 + (P2Ph / dist_A2_to_A4) * (p_at_A4 - p_at_A2);
-  double P3Ph = std::sqrt(l_a2_ * 2 - P2Ph * 2);
+
+  double P2Ph = (std::pow(l_a2_, 2) - std::pow(l_a3_, 2) +
+    std::pow(dist_A2_to_A4, 2)) /
+    (2 * dist_A2_to_A4);
+
+  // Eigen::Vector2d Ph = p_at_A2 + (P2Ph / dist_A2_to_A4) * (p_at_A4 - p_at_A2);
+  Eigen::Vector2d Ph;
+  Ph[0] = p_at_A2[0] + (P2Ph / dist_A2_to_A4) * (p_at_A4[0] - p_at_A2[0]);
+  Ph[1] = p_at_A2[1] + (P2Ph / dist_A2_to_A4) * (p_at_A4[1] - p_at_A2[1]);
+
+  double P3Ph = std::sqrt(std::pow(l_a2_, 2) - std::pow(P2Ph, 2));
   Eigen::Vector2d p_at_A3;
   p_at_A3[0] = Ph[0] + (P3Ph / dist_A2_to_A4) * (p_at_A4[1] - p_at_A2[1]);
   p_at_A3[1] = Ph[1] - (P3Ph / dist_A2_to_A4) * (p_at_A4[0] - p_at_A2[0]);
@@ -148,6 +153,77 @@ PantographModel::jacobian(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> q
   return Eigen::Matrix<double, 2, 2>::Zero();
 }
 
+Eigen::Vector<double, 5>
+PantographModel::ik_panto_optimized(Eigen::Vector<double, 2> P3)
+{
+  Eigen::Vector<double, 5> jnt_pos;
+  Eigen::Vector2d P2, P4, P5;
+  // Coords of P5 in base frame
+  P5 << -l_a5_, 0;
+
+  // Calculate the length of the segment P1P3
+  double a13 = P3.norm();
+
+  // Calculate the length of the segment P5P3
+  double a53 = (P3 - P5).norm();
+
+  // Calculate the angle of the active joints
+  double alpha1 =
+    std::acos(
+    (std::pow(l_a1_, 2) - std::pow(l_a2_, 2) + std::pow(a13, 2)) /
+    (2 * l_a1_ * a13));
+
+  double beta1 = std::atan2(P3[1], -P3[0]);
+
+  // theta1
+  jnt_pos[0] = PI_CST - alpha1 - beta1;
+
+  double alpha5 = std::acos(
+    (std::pow(a53, 2) + std::pow(l_a4_, 2) - std::pow(l_a3_, 2)) /
+    (2 * a53 * l_a4_));
+  double beta5 = std::atan2(P3[1], P3[0] - l_a5_);
+
+  // theta5
+  jnt_pos[4] = alpha5 + beta5;
+
+  // Calculate the other joint angles
+  // Coords of P2 in base frame
+  P2[0] = l_a1_ * std::cos(jnt_pos[0]);
+  P2[1] = l_a1_ * std::sin(jnt_pos[0]);
+
+  // Coords of P4 in base frame
+  P4[0] = P5[0] + l_a4_ * std::cos(jnt_pos[1]);
+  P4[1] = P5[1] + l_a4_ * std::sin(jnt_pos[1]);
+
+  // Calculate the length of the segment P2P4
+  double a24 = std::sqrt(std::pow(P4[0] - P2[0], 2) + std::pow(P4[1] - P2[1], 2));
+
+  // Angles of the left arm
+  double gamma2 =
+    std::acos(
+    (std::pow(a24, 2) + std::pow(l_a2_, 2) - std::pow(l_a3_, 2)) /
+    (2 * l_a2_ * a24));
+
+  double delta = std::atan2(P4[1] - P2[1], P4[0] - P2[0]);
+
+  // theta2
+  jnt_pos[1] = gamma2 + delta;
+
+  // Angles of the right arm
+  double gamma4 =
+    std::acos(
+    (std::pow(a24, 2) + std::pow(l_a3_, 2) - std::pow(l_a2_, 2)) /
+    (2 * a24 * l_a3_));
+
+  // theta4
+  jnt_pos[3] = PI_CST - gamma4 - delta;
+
+  // theta3
+  jnt_pos[2] = -(PI_CST / 2) + gamma4 + 2 * gamma2;
+
+  return jnt_pos;
+}
+
 Eigen::Vector<double, 3>
 PantographModel::fk_system(Eigen::Vector<double, 2> q)
 {
@@ -156,22 +232,15 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
   Eigen::Vector3d PI, P3, P3I, PIU, PU;
 
   // Coordinates of insertion point PI in base frame according to CAD
-  PI[0] = PI_x;
-  PI[0] = PI_y;
-  PI[0] = PI_z;
-  
-  // PI[0] = 0.0425;
-  // PI[1] = 0.16056;
-  // PI[2] = 0.09;
+  PI[0] = PI_x;  // = 0.0425;
+  PI[1] = PI_y;  // = 0.16056;
+  PI[2] = PI_z;  // = 0.09;
 
   // Get coords of P3 in base frame according to FKM
   Eigen::Vector2d P3_2D;
   P3_2D = fk(q);
 
   // Convert P3 in the plane to coords in 3D
-  // P3[0] = P3_2D[0];
-  // P3[1] = P3_2D[1];
-  // P3[2] = 0;
   P3 << P3_2D, 0;
 
   // Convert coords of PI in base frame to P3 frame
@@ -194,33 +263,28 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
   return PU;
 }
 Eigen::Vector<double, 7>
-PantographModel::ik_system(Eigen::Vector<double, 3> p)
+PantographModel::ik_system(Eigen::Vector<double, 3> PU)
 {
   /* Inverse kinematics model of the complete system:
   computes the angles of all the joints according
   to the cartesian position of interaction point PU*/
 
-  Eigen::Vector3d PI, P3, PI3, PIU, PU;
+  Eigen::Vector3d PI, P3, PI3, PIU;
 
   // Coords of insertion point PI in base frame according to CAD
-
-  PI[0] = PI_x;
-  PI[0] = PI_y;
-  PI[0] = PI_z;
-
-  // PI[0] = 0.0425;
-  // PI[1] = 0.16056;
-  // PI[2] = 0.09;
+  PI[0] = PI_x;  // = 0.0425;
+  PI[1] = PI_y;  // = 0.16056;
+  PI[2] = PI_z;  // = 0.09;
 
   // Transformation of PU coords in base frame to coords in PI frame
-  PIU = PU - PI;
+  PIU = PI - PU;
 
   // Get azimuth (theta) and elevation (phi) angles (in radians) of vector PIPU
   double theta = std::atan2(PIU[1], PIU[0]);
   double phi = std::atan2(PIU[2], std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2)));
   double Lout = std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2) + std::pow(PIU[2], 2));
 
-  // Get end effector position P3
+  // Get length of the needle segment between PI and P3
   double Lin = l_needle_ - Lout;
 
   // Transformation from I to P3 in I frame
@@ -229,19 +293,22 @@ PantographModel::ik_system(Eigen::Vector<double, 3> p)
   PI3[2] = Lin * std::sin(phi);
 
   // Transformation of P3 coords on I frame to coords in base frame
-  P3 = PI - PI3;
+  // P3 = PI - PI3
+  P3 = PI + PI3;
 
+  // Convert P3 coords in 3D to coords in plane
   Eigen::Vector<double, 2> P3_2D;
   P3_2D[0] = P3[0];
   P3_2D[1] = P3[1];
 
   // Get angles of the pantograph joints using IKM
   Eigen::Vector<double, 5> jnt_pos;
-  jnt_pos = ik(P3_2D);
+  jnt_pos = ik(P3_2D);  // check if ik is correct
+
+  // jnt_pos = ik_panto_optimized(P3_2D);
 
   // Return pantograph joints angles + needle orientation angles
   Eigen::Vector<double, 7> jnt_ext_pos;
-
   jnt_ext_pos << jnt_pos, theta, phi;
 
   return jnt_ext_pos;
@@ -255,36 +322,43 @@ PantographModel::populate_all_joint_positions_full_system(Eigen::Vector<double, 
   return ik_system(p);
 }
 
-// Calculate force applied by the pantograph to create the force felt by the user
-double 
-PantographModel::get_panto_force(Eigen::Vector<double, 3> p, double f_guide, double alpha)
+/* Calculate force applied by the pantograph (f_mech)to create the force
+felt by the user with:
+- alpha : the angle determined by the direction
+          of the force applied by the user
+- f_guide : the desired guiding force to be felt by the user*/
+double
+PantographModel::get_panto_force(Eigen::Vector<double, 3> PU, double f_guide, double alpha)
 {
- // Get all the robot joint angles IKM
+  // Get all the robot joint angles IKM
   Eigen::Vector<double, 7> jnt_ext_pos;
-  jnt_ext_pos = ik_system(p); 
+  jnt_ext_pos = ik_system(PU);
   double theta = jnt_ext_pos[5];  // Azimuth angle
-  double phi = jnt_ext_pos[6];  // Elevation angle 
+  double phi = jnt_ext_pos[6];  // Elevation angle
 
-  // get insertion point height 
-  double H = PI_z; // = 0.09 based on insertion point coords 
+  // get insertion point height
+  double H = PI_z;  // = 0.09 based on insertion point coords
 
   // Calculate length of the needle segment between P3 and PI
-  double l_in = H/std::sin(phi);
+  double l_in = H / std::sin(phi);
 
   // Calculate length of the needle segment between PI and PU
-  double l_out = l_needle_ - l_in;
+  double l_out = l_needle_ - l_in;  // As a first approximation, L_out is constant
 
-  /*Calculate the perpendicular component of the force that the system 
+  /*Calculate the perpendicular component of the force that the system
   needs to apply to make the user feel a force at the point PU */
-  double f_perp = f_guide*(l_out/l_in);
+  double f_perp = f_guide * (l_out / l_in);
 
   /* Calculate the force that the pantograph needs to generate
   beta is the angle between the force vector Fmech and the needle vector */
-  double cos_beta = std::cos(phi)*std::cos(theta-alpha);
-  double f_mech = f_perp*(l_in/l_out);
+  double cos_beta = std::cos(phi) * std::cos(theta - alpha);
+  double f_mech = f_perp / std::sqrt(1 - std::pow(cos_beta, 2));
+
+  // Calculate the folt felt by the user at point PU
+  double f_user = f_perp * (l_in / l_out);
 
   return f_mech;
-} 
+}
 
 
 }  // namespace pantograph_library
