@@ -188,8 +188,8 @@ controller_interface::return_type PantographMimickController::update(
   command_interfaces_[2].set_value(pos_a4);
 
   // Write pitch and orientation angles to end effector universal joint
-  command_interfaces_[5].set_value(pos_pitch);
-  command_interfaces_[6].set_value(pos_roll);
+  command_interfaces_[3].set_value(pos_pitch);
+  command_interfaces_[4].set_value(pos_roll);
 
 
   return controller_interface::return_type::OK;
