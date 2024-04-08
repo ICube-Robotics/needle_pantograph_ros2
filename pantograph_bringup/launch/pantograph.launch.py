@@ -90,11 +90,11 @@ def generate_launch_description():
         executable='spawner',
         arguments=['joint_state_broadcaster'],
     )
-    pantograph_mimick_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['pantograph_mimick_controller'],
-    )
+    # pantograph_mimick_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['pantograph_mimick_controller'],
+    # )
 
     effort_controller_spawner = Node(
         package='controller_manager',
@@ -102,13 +102,20 @@ def generate_launch_description():
         arguments=['forward_effort_controller'],
         )
 
+    tool_orientation_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['tool_orientation_controller'],
+    )
+
     nodes = [
         control_node,
         rviz_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
-        pantograph_mimick_controller_spawner,
+        # pantograph_mimick_controller_spawner,
         effort_controller_spawner,
+        tool_orientation_controller_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
