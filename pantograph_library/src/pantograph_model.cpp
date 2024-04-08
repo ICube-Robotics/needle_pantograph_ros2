@@ -149,8 +149,7 @@ PantographModel::jacobian(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> q
   J << J11, J21,
     J21, J22;
 
-
-  return Eigen::Matrix<double, 2, 2>::Zero();
+  return J;
 }
 
 Eigen::Vector<double, 5>
