@@ -250,6 +250,9 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
   double phi = std::atan2(P3I[2], std::sqrt(std::pow(P3I[0], 2) + std::pow(P3I[1], 2)));
   double Lin = std::sqrt(std::pow(P3I[0], 2) + std::pow(P3I[1], 2) + std::pow(P3I[2], 2));
 
+  // Check for correct definition of phi angle
+  phi = (PI_CST / 2) - phi;
+
   // Calculate translation from PI to PU
   double Lout = l_needle_ - Lin;
   PIU[0] = Lout * std::cos(phi) * std::cos(theta);  //  Coords of PU in PI frame
@@ -261,7 +264,7 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
 
   return PU;
 }
-Eigen::Vector<double, 7>
+Eigen::Vector<double, 8>
 PantographModel::ik_system(Eigen::Vector<double, 3> PU)
 {
   /* Inverse kinematics model of the complete system:
@@ -282,6 +285,9 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
   double theta = std::atan2(PIU[1], PIU[0]);
   double phi = std::atan2(PIU[2], std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2)));
   double Lout = std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2) + std::pow(PIU[2], 2));
+
+  // Check for correct definition of phi angle
+  phi = (PI_CST / 2) - phi;
 
   // Get length of the needle segment between PI and P3
   double Lin = l_needle_ - Lout;
@@ -307,14 +313,14 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
   // jnt_pos = ik_panto_optimized(P3_2D);
 
   // Return pantograph joints angles + needle orientation angles
-  Eigen::Vector<double, 7> jnt_ext_pos;
-  jnt_ext_pos << jnt_pos, theta, phi;
+  Eigen::Vector<double, 8> jnt_ext_pos;
+  jnt_ext_pos << jnt_pos, theta, phi, Lout;
 
   return jnt_ext_pos;
 }
 
 // Calculate joint positions of the complete system for visualization
-Eigen::Vector<double, 7>
+Eigen::Vector<double, 8>
 PantographModel::populate_all_joint_positions_full_system(Eigen::Vector<double, 2> q)
 {
   auto p = fk_system(q);
@@ -330,7 +336,7 @@ double
 PantographModel::get_panto_force(Eigen::Vector<double, 3> PU, double f_guide, double alpha)
 {
   // Get all the robot joint angles IKM
-  Eigen::Vector<double, 7> jnt_ext_pos;
+  Eigen::Vector<double, 8> jnt_ext_pos;
   jnt_ext_pos = ik_system(PU);
   double theta = jnt_ext_pos[5];  // Azimuth angle
   double phi = jnt_ext_pos[6];  // Elevation angle

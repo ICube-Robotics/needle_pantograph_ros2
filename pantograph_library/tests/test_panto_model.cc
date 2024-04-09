@@ -102,7 +102,7 @@ by the C++ model and the same coords calculate by the MATLAB model*/
 TEST(TestModel, TestIKM) {
   pantograph_library::PantographModel panto_model_;
   Eigen::Vector < double, 2 > q_cpp, q_matlab;
-  Eigen::Vector < double, 7 > joints;
+  Eigen::Vector < double, 8 > joints;
   Eigen::Vector3d PU_matlab;
 
   double error = 1e-10;

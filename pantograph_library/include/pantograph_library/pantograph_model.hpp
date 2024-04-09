@@ -53,13 +53,13 @@ public:
   Eigen::Vector<double, 3> fk_system(Eigen::Vector<double, 2> q);
 
   /// Inverse kinematics of the complete system p = fk_needle(P3) = fk_needle(fk([q1,q2]))
-  Eigen::Vector<double, 7> ik_system(Eigen::Vector<double, 3> p);
+  Eigen::Vector<double, 8> ik_system(Eigen::Vector<double, 3> p);
 
   /// Inverse kinematics of the pantograph according to equations of T.CESARE report
   Eigen::Vector<double, 5> ik_panto_optimized(Eigen::Vector<double, 2> p);
 
   /// Populate all joints position of the full system (pantograph + needle)
-  Eigen::Vector<double, 7> populate_all_joint_positions_full_system(Eigen::Vector<double, 2> q);
+  Eigen::Vector<double, 8> populate_all_joint_positions_full_system(Eigen::Vector<double, 2> q);
 
   /// Calculate the force that the pantograph needs to apply to create a force felt by the user
   double get_panto_force(Eigen::Vector<double, 3> p, double f_guide, double alpha);
