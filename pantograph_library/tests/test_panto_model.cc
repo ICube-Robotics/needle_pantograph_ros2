@@ -79,7 +79,7 @@ TEST(TestModel, TestSystemFKM) {
 
   // q values according to MATLAB model
   q[0] = 0.5;
-  q[1] = 2.64159265358979; pantograph_library::PI_CST - 0.5;
+  q[1] = 2.64159265358979;  // pantograph_library::PI_CST - 0.5;
 
   // Coords of PU according to MATLAB model
   PU_matlab[0] = 0.0942524755499338;
