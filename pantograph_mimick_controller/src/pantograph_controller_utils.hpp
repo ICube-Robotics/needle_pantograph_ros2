@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PANTOGRAPH_MIMICK_CONTROLLER__PANTOGRAPH_CONTROLLER_UTILS_HPP_
-#define PANTOGRAPH_MIMICK_CONTROLLER__PANTOGRAPH_CONTROLLER_UTILS_HPP_
+#ifndef PANTOGRAPH_CONTROLLER_UTILS_HPP_
+#define PANTOGRAPH_CONTROLLER_UTILS_HPP_
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <limits>
 
 namespace pantograph_mimick_controller
 {
@@ -31,4 +32,4 @@ double get_value(
 
 }  // namespace pantograph_mimick_controller
 
-#endif  // PANTOGRAPH_MIMICK_CONTROLLER__PANTOGRAPH_CONTROLLER_UTILS_HPP_
+#endif  // PANTOGRAPH_CONTROLLER_UTILS_HPP_

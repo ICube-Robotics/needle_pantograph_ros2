@@ -7,8 +7,13 @@ controller_manager:
 
     haptic_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+
     pantograph_mimick_controller:
       type: pantograph_mimick_controller/PantographMimickController
+
+    pantograph_mock_motors_controller:
+      type: pantograph_mimick_controller/PantographMockMotorsController
+
     forward_effort_controller:
       type: effort_controllers/JointGroupEffortController
     tool_orientation_controller:
