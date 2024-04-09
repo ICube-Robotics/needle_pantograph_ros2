@@ -65,6 +65,14 @@ def generate_launch_description():
         ]
     )
 
+    rviz_config_file = PathJoinSubstitution(
+        [
+            FindPackageShare('pantograph_description'),
+            'rviz',
+            'display_robot.rviz',
+        ]
+    )
+
     control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
@@ -82,7 +90,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         output='log',
-        # arguments=['-d', rviz_config_file],
+        arguments=['-d', rviz_config_file],
     )
 
     joint_state_broadcaster_spawner = Node(
