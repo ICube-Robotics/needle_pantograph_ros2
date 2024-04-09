@@ -14,7 +14,7 @@ controller_manager:
     tool_orientation_controller:
       type: position_controllers/JointGroupPositionController
     panto_position_controller:
-      type: position_controllers/JointGroupPositionController  
+      type: position_controllers/JointGroupPositionController
 
 
 haptic_trajectory_controller:
