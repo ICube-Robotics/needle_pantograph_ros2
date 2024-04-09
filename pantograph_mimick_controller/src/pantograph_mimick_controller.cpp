@@ -67,8 +67,8 @@ controller_interface::CallbackReturn PantographMimickController::on_configure(
     params_.prefix + "panto_a3",
     params_.prefix + "panto_a4",
     params_.prefix + "panto_a5",
-    params_.prefix + "tool_pitch_joint",
-    params_.prefix + "tool_roll_joint"};
+    params_.prefix + "tool_theta_joint",
+    params_.prefix + "tool_phi_joint"};
 
   RCLCPP_INFO(get_node()->get_logger(), "configure successful");
   return controller_interface::CallbackReturn::SUCCESS;
@@ -179,8 +179,8 @@ controller_interface::return_type PantographMimickController::update(
   double pos_a3 = full_joint_state[2];
   double pos_a4 = full_joint_state[3];
 
-  double pos_pitch = full_joint_state[5];
-  double pos_roll = full_joint_state[6];
+  double pos_theta = full_joint_state[5];
+  double pos_phi = full_joint_state[6];  // check for correct angle orientation
 
   // write mimics to HW
   command_interfaces_[0].set_value(pos_a2);
@@ -188,8 +188,8 @@ controller_interface::return_type PantographMimickController::update(
   command_interfaces_[2].set_value(pos_a4);
 
   // Write pitch and orientation angles to end effector universal joint
-  command_interfaces_[3].set_value(pos_pitch);
-  command_interfaces_[4].set_value(pos_roll);
+  command_interfaces_[3].set_value(pos_theta);
+  command_interfaces_[4].set_value(pos_phi);
 
 
   return controller_interface::return_type::OK;
