@@ -214,7 +214,15 @@
     <axis xyz="0 1 0"/>
   </joint>
 
-
+  <!-- ==========  Test needle insertion DoF =========== -->
+  <link name = "needle_interaction_link"/>
+  <joint name="needle_interaction_joint" type="prismatic">
+    <parent link= "tool_phi_link"/>
+    <child link= "needle_interaction_link"/>
+    <origin xyz = "0 0 0.1" rpy="0 0 0"/>
+    <limit effort="1000.0" lower="0.5" upper="-0.5" velocity="0.5"/>
+    <axis xyz="0 0 1"/>
+  </joint>
 
   </xacro:macro>
 </robot>
