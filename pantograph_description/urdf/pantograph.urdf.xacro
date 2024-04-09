@@ -187,34 +187,36 @@
 
   <!-- ==========  Test universal joint at end effector =========== -->
   <!-- tool pitch angle-->
-  <link name="tool_pitch_link"/>
+  <link name="tool_theta_link"/>
 
-  <joint name="tool_pitch_joint" type="revolute">
+  <joint name="tool_theta_joint" type="revolute">
     <parent link= "panto_tool0"/>
-    <child link= "tool_pitch_link"/>
+    <child link= "tool_theta_link"/>
     <origin xyz = "0 0 0" rpy="0 0 0"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="0.5"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- tool roll angle-->
+  <link name = "tool_phi_link">
+    <visual>
+      <geometry>
+        <cylinder length = "0.2" radius = "0.0025"/>
+      </geometry>
+      <material name = "white_alpha"/>
+      <origin xyz = "0 0 0.1" rpy = "0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="tool_phi_joint" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="tool_theta_link"/>
+    <child link="tool_phi_link"/>
     <limit effort="1000.0" lower="-3" upper="3" velocity="0.5"/>
     <axis xyz="0 1 0"/>
   </joint>
 
-   <!-- tool roll angle-->
-   <link name = "tool_roll_link">
-     <visual>
-       <geometry>
-         <cylinder length = "0.2" radius = "0.0025"/>
-       </geometry>
-       <material name = "white_alpha"/>
-       <origin xyz = "0 0 0.1" rpy = "0 0 0"/>
-     </visual>
-   </link>
 
-   <joint name="tool_roll_joint" type="revolute">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <parent link="tool_pitch_link"/>
-      <child link="tool_roll_link"/>
-      <limit effort="1000.0" lower="-3" upper="3" velocity="0.5"/>
-      <axis xyz="1 0 0"/>
-   </joint>
 
   </xacro:macro>
 </robot>
