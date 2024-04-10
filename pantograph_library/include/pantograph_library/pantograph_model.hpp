@@ -34,7 +34,7 @@ public:
     double l_a2 = 0.165,
     double l_a3 = 0.165,
     double l_a4 = 0.1,
-    double l_a5 = 0.085);
+    double l_a5 = 0.085);  // length in m
 
   /// Populate all joints position
   /// -> [jnt_a1, jnt_a2, ..., jnt_a5] = populate_all_joint_positions(q = [jnt_a1, jnt_a5])
@@ -48,6 +48,24 @@ public:
 
   /// Jacobian J(q, q_dot), where q = [joint_a1, joint_a5].T
   Eigen::Matrix<double, 2, 2> jacobian(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> q_dot);
+
+  /// Forward kinematics of the complete system p = fk_needle(P3) = fk_needle(fk([q1,q2]))
+  Eigen::Vector<double, 3> fk_system(Eigen::Vector<double, 2> q);
+
+  /// Inverse kinematics of the complete system p = fk_needle(P3) = fk_needle(fk([q1,q2]))
+  Eigen::Vector<double, 8> ik_system(Eigen::Vector<double, 3> p);
+
+  /// Forward kinematics of the pantograph according to the equations of T.CESARE report
+  Eigen::Vector<double, 2> fk_panto_TC(Eigen::Vector<double, 2> q);
+
+  /// Inverse kinematics of the pantograph according to the equations of T.CESARE report
+  Eigen::Vector<double, 5> ik_panto_TC(Eigen::Vector<double, 2> p);
+
+  /// Populate all joints position of the full system (pantograph + needle)
+  Eigen::Vector<double, 8> populate_all_joint_positions_full_system(Eigen::Vector<double, 2> q);
+
+  /// Calculate the force that the pantograph needs to apply to create a force felt by the user
+  double get_panto_force(Eigen::Vector<double, 3> p, double f_guide, double alpha);
 
 protected:
   /// First left link length in m (i.e., A1->A2)
@@ -64,6 +82,14 @@ protected:
 
   /// Dist between A1 and A5 in m (i.e., A4->A5)
   double l_a5_;
+
+  /// Length of the needle in m
+  double l_needle_ = 0.2;  //  in m
+
+  /// Coords of insertion point according to CAD
+  double PI_x = 0.0425;
+  double PI_y = 0.16056;
+  double PI_z = 0.09;
 };
 
 }  // namespace pantograph_library

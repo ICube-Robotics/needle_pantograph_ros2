@@ -22,6 +22,12 @@ class PantographModel:
     __a1 = 0.100
     __a2 = 0.165
     __a5 = 0.085
+    __l_needle = 0.2
+
+    # Insertion point coords according to CAD
+    PI_x = 0.0425
+    PI_y = 0.16056
+    PI_z = 0.09
 
     def __init__(self):
         self.__a3 = self.__a2
@@ -117,7 +123,97 @@ class PantographModel:
 
         return J
 
+    # Models of the complete system (pantograph + needle)
+    @staticmethod
+    def fk_system(self, q):
+        # FKM of the complete system : calculates cartesian position
+        # of interaction point PU according to joint space coordinates q
+        PI = np.array([self.PI_x, self.PI_y, self.PI_z])
+
+        # Get coords of P3 in base frame according to panto FKM
+        P3_2D = self.fk(q)
+
+        # Convert P3 coords in plane to coords in 3D
+        P3 = np.append(P3_2D, 0)
+
+        # Convert coords of PI in base frame to P3 frame
+        P3I = PI - P3
+
+        # Get azimuth (theta) and elevation (phi) angles (in radians) of vector P3PI
+        theta = np.arctan2(P3I[1], P3I[0])
+        phi = np.arctan2(P3I[2], np.sqrt(P3I[0]**2 + P3I[1]**2))
+        Lin = np.sqrt(P3I[0]**2 + P3I[1]**2 + P3I[2]**2)
+
+        # Calculate translation from PI to PU
+        Lout = self.l_needle - Lin
+        PIU = Lout * np.array([np.cos(phi)*np.cos(theta), np.cos(phi)*np.sin(theta), np.sin(phi)])
+
+        # Convert coords of PU in PI frame to base frame
+        PU = PI + PIU
+
+        return PU
+
+    @staticmethod
+    def ik_system(self, PU):
+        # Inverse kinematics model of the complete system:
+        # computes the angles of all the joints according
+        # to the cartesian position of interaction point PU
+        PI = np.array([self.PI_x, self.PI_y, self.PI_z])
+
+        # Transformation of PU coords in base frame to coords in PI frame
+        PIU = PI - PU
+
+        # Get azimuth (theta) and elevation (phi) angles (in radians) of vector P3PI
+        theta = np.arctan2(PIU[1], PIU[0])
+        phi = np.arctan2(PIU[2], np.sqrt(PIU[0]**2 + PIU[1]**2))
+        Lout = np.sqrt(PIU[0]**2 + PIU[1]**2 + PIU[2]**2)
+
+        # Get length of the needle segment betzeen PI and P3
+        Lin = self.l_needle - Lout
+
+        PI3 = Lin * np.array([np.cos(phi)*np.cos(theta), np.cos(phi)*np.sin(theta), np.sin(phi)])
+
+        # Convert coords of PU in PI frame to base frame
+        P3 = PI + PI3
+
+        # Convert P3 coords in 3D to coords in plane
+        P3_2D = np.array([P3[0], P3[1]])
+
+        # Get angle of the pantograph joints using IKM
+        jnt_pos = self.ik(self, P3_2D)
+
+        # Return pantograph joint angles + needle orientation angles
+        jnt_ext_pos = np.append(jnt_pos, [theta, phi])
+        return jnt_ext_pos
+
+    @staticmethod
+    def get_panto_force(self, PU, f_guide, alpha):
+        # Get all the robot joint angles
+        jnt_ext_pos = self.ik_system(PU)
+        theta = jnt_ext_pos[5]
+        phi = jnt_ext_pos[6]
+
+        # Get insertion point height
+        H = self.PI_z
+
+        # Calculate length of the needle segment between P3 and PI
+        Lin = H / np.sin(phi)
+
+        # Calculate the length of the needle segment between PI and PU
+        Lout = self.l_needle - Lin
+
+        # Calculate the perpendicular component of the force that the system
+        # needs to apply to create the force desired at point PU
+        f_perp = f_guide * (Lout/Lin)
+
+        # Calculate the force that the pantograph needs to generate
+        # beta is the angle between the force vector f_mech and the needle
+        cos_beta = np.cos(phi) * np.cos(theta - alpha)
+        f_mech = f_perp / np.sqrt(1 - cos_beta ** 2)
+
+        return f_mech
     # Read-only properties
+
     @property
     def a1(self):
         return self.__a1
@@ -137,3 +233,7 @@ class PantographModel:
     @property
     def a5(self):
         return self.__a5
+
+    @property
+    def l_needle(self):
+        return self.__l_needle

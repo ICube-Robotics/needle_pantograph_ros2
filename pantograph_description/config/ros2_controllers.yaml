@@ -11,6 +11,10 @@ controller_manager:
       type: pantograph_mimick_controller/PantographMimickController
     forward_effort_controller:
       type: effort_controllers/JointGroupEffortController
+    tool_orientation_controller:
+      type: position_controllers/JointGroupPositionController
+    panto_position_controller:
+      type: position_controllers/JointGroupPositionController
 
 
 haptic_trajectory_controller:
@@ -28,6 +32,18 @@ haptic_trajectory_controller:
       - panto_a5
 
 forward_effort_controller:
+  ros__parameters:
+    joints:
+      - panto_a1
+      - panto_a5
+
+tool_orientation_controller:
+  ros__parameters:
+    joints:
+      - tool_theta_joint
+      - tool_phi_joint
+
+panto_position_controller:
   ros__parameters:
     joints:
       - panto_a1
