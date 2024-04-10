@@ -299,7 +299,7 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
   double Lout = l_needle_ - Lin;
   PIU[0] = Lout * std::cos(phi) * std::cos(theta);  //  Coords of PU in PI frame
   PIU[1] = Lout * std::cos(phi) * std::sin(theta);
-  PIU[2] = - Lout * std::sin(phi);
+  PIU[2] = -Lout * std::sin(phi);
 
   // Convert coords of PU in PI frame to coords in base frame
   PU = PI + PIU;
@@ -331,7 +331,7 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
   double theta = std::atan2(PIU[1], PIU[0]);
   double phi = std::atan2(PIU[2], std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2)));
   double Lout = std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2) + std::pow(PIU[2], 2));
-  //convert phi for the correct definition of the angle in RViz
+  // convert phi for the correct definition of the angle in RViz
   phi = phi + (PI_CST / 2);
 
   // Get length of the needle segment between PI and P3
@@ -347,7 +347,7 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
   PI3[2] = PI_z - Lin * std::sin(phi);
 
   // Transformation of P3 coords on I frame to coords in base frame
-  //P3 = PI - PI3;
+  // P3 = PI - PI3;
   P3 = PI + PI3;
 
   // Convert P3 coords in 3D to coords in plane
