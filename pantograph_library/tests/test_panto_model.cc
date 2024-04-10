@@ -49,10 +49,10 @@ TEST(TestModel, TestPantoIKM) {
   P3[1] = 0.149223285959824;
 
   // q values according to MATLAB model
-  // Note: In RViz angles are defined according to parent frame 
+  // Note: In RViz angles are defined according to parent frame
   // and are positive in trigonometric direction
   q_matlab[0] = 2.64159265358979;
-  q_matlab[1] = - 0.500000000000000;  
+  q_matlab[1] = -0.500000000000000;
 
   // q values according to C++ model
   joints = panto_model_.ik_panto_TC(P3);
@@ -80,13 +80,13 @@ TEST(TestModel, TestSystemFKM) {
   double error = 1e-10;
 
   // q values according to MATLAB model
-  q[0] = 0.5;
-  q[1] = 2.64159265358979;  // pantograph_library::PI_CST - 0.5;
+  q[0] = 2.64159265358979;  // pantograph_library::PI_CST - 0.5;
+  q[1] = 0.5;
 
   // Coords of PU according to MATLAB model
-  PU_matlab[0] = 0.0942524755499338;
-  PU_matlab[1] = 0.167462388425657;
-  PU_matlab[2] = 0.144796738817577;
+  PU_matlab[0] = 0.0425000000000000;
+  PU_matlab[1] = 0.174218467450767;
+  PU_matlab[2] = 0.198431955345491;
 
   // Coords of PU according to C++ model
   PU_cpp = panto_model_.fk_system(q);
@@ -110,13 +110,15 @@ TEST(TestModel, TestSystemIKM) {
   double error = 1e-10;
 
   // PU coords according to MATLAB model
-  PU_matlab[0] = 0.0942524755499338;
-  PU_matlab[1] = 0.167462388425657;
-  PU_matlab[2] = 0.144796738817577;
+  PU_matlab[0] = 0.0425000000000000;
+  PU_matlab[1] = 0.174218467450767;
+  PU_matlab[2] = 0.198431955345491;
 
   // q values according to MATLAB model
-  q_matlab[0] = 0.500000000000000;
-  q_matlab[1] = 2.64159265358979;  // PI_CST - 0.5
+  // Note: In RViz angles are defined according to parent frame
+  // and are positive in trigonometric direction
+  q_matlab[0] = 2.64159265358979;
+  q_matlab[1] = -0.500000000000000;
 
   // q values according to C++ model
   joints = panto_model_.ik_system(PU_matlab);
