@@ -133,10 +133,14 @@ controller_interface::return_type PantographMockMotorsController::update(
   double torque_a1 = get_value(name_if_value_mapping_, pantograph_joint_names_[0], HW_IF_EFFORT);
   double torque_a5 = get_value(name_if_value_mapping_, pantograph_joint_names_[4], HW_IF_EFFORT);
 
+  // Get external torques
+  double tau_ext_a1 = get_value(name_if_value_mapping_, "fake_tau_ext_1", HW_IF_EFFORT);
+  double tau_ext_a5 = get_value(name_if_value_mapping_, "fake_tau_ext_5", HW_IF_EFFORT);
+
   // Calculate the pantograph (passive) joint acc. from torques
   double equivalent_joint_inertia = 0.02;  // kg m^2
-  double last_acc_a1 = equivalent_joint_inertia * torque_a1;
-  double last_acc_a5 = equivalent_joint_inertia * torque_a5;
+  double last_acc_a1 = 1 / equivalent_joint_inertia * (torque_a1 + tau_ext_a1);
+  double last_acc_a5 = 1 / equivalent_joint_inertia * (torque_a5 + tau_ext_a5);
 
   // Get the previous (active) joint positions and velocities
   double last_pos_a1 =

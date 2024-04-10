@@ -18,6 +18,7 @@
           <hardware>
           <xacro:if value="${use_fake_hardware}">
             <plugin>mock_components/GenericSystem</plugin>
+            <param name="mock_sensor_commands">true</param>
           </xacro:if>
           <xacro:unless value="${use_fake_hardware}">
             <plugin>ethercat_driver/EthercatDriver</plugin>
@@ -26,6 +27,19 @@
           </xacro:unless>
           </hardware>
       </xacro:unless>
+
+      <xacro:if value="${use_fake_hardware}">
+        <sensor name="fake_tau_ext_1">
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+        </sensor>
+        <sensor name="fake_tau_ext_5">
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+        </sensor>
+      </xacro:if>
 
       <!-- Actual joints (i.e., motors) -->
       <joint name="panto_a1">
