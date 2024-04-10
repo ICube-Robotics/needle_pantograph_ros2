@@ -17,15 +17,15 @@ TEST(TestModel, TestPantoFKM) {
   double error = 1e-10;
 
   // q values according to MATLAB model
-  q[0] = 0.5;
-  q[1] = pantograph_library::PI_CST - 0.5;  // 2.64159265358979
+  q[0] = pantograph_library::PI_CST - 0.5;  // 2.64159265358979
+  q[1] = 0.5;
 
   // Coords of P3 according to MATLAB model
-  P3_matlab[0] = -0.0425000000000000;
+  P3_matlab[0] = 0.0425000000000000;
   P3_matlab[1] = 0.149223285959824;
 
   // Coords of P3 according to C++ model
-  P3_cpp = panto_model_.fk(q);
+  P3_cpp = panto_model_.fk_panto_TC(q);
 
   /*Expect values to be equal (up to a 1e-10 error) between
   the C++ and the MATLAB model */
@@ -45,15 +45,17 @@ TEST(TestModel, TestPantoIKM) {
   double error = 1e-10;
 
   // P3 coords according to MATLAB model
-  P3[0] = -0.0425000000000000;
+  P3[0] = 0.0425000000000000;
   P3[1] = 0.149223285959824;
 
   // q values according to MATLAB model
-  q_matlab[0] = 0.500000000000000;
-  q_matlab[1] = 2.64159265358979;
+  // Note: In RViz angles are defined according to parent frame 
+  // and are positive in trigonometric direction
+  q_matlab[0] = 2.64159265358979;
+  q_matlab[1] = - 0.500000000000000;  
 
   // q values according to C++ model
-  joints = panto_model_.ik(P3);
+  joints = panto_model_.ik_panto_TC(P3);
   q_cpp[0] = joints[0];
   q_cpp[1] = joints[4];
 
@@ -99,7 +101,7 @@ TEST(TestModel, TestSystemFKM) {
 /* Test of the IKM of the system by comparing the values of q calculated
 by the C++ model and the same coords calculate by the MATLAB model*/
 
-TEST(TestModel, TestIKM) {
+TEST(TestModel, TestSystemIKM) {
   pantograph_library::PantographModel panto_model_;
   Eigen::Vector < double, 2 > q_cpp, q_matlab;
   Eigen::Vector < double, 8 > joints;

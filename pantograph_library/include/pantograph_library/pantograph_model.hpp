@@ -55,8 +55,11 @@ public:
   /// Inverse kinematics of the complete system p = fk_needle(P3) = fk_needle(fk([q1,q2]))
   Eigen::Vector<double, 8> ik_system(Eigen::Vector<double, 3> p);
 
-  /// Inverse kinematics of the pantograph according to equations of T.CESARE report
-  Eigen::Vector<double, 5> ik_panto_optimized(Eigen::Vector<double, 2> p);
+  /// Forward kinematics of the pantograph according to the equations of T.CESARE report
+  Eigen::Vector<double, 2> fk_panto_TC(Eigen::Vector<double, 2> q);
+
+  /// Inverse kinematics of the pantograph according to the equations of T.CESARE report
+  Eigen::Vector<double, 5> ik_panto_TC(Eigen::Vector<double, 2> p);
 
   /// Populate all joints position of the full system (pantograph + needle)
   Eigen::Vector<double, 8> populate_all_joint_positions_full_system(Eigen::Vector<double, 2> q);
