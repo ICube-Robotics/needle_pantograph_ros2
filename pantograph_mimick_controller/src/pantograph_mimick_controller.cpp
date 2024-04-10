@@ -179,7 +179,7 @@ controller_interface::return_type PantographMimickController::update(
   full_joint_state = pantograph_model_.populate_all_joint_positions_full_system(q);
 
   double pos_a2 = panto_joint_state[1];
-  double pos_a3 = - pos_a2 - pos_a1;
+  double pos_a3 = -pos_a2 - pos_a1;
   double pos_a4 = panto_joint_state[3];
 
   double pos_theta = full_joint_state[5];
