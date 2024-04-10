@@ -68,7 +68,8 @@ controller_interface::CallbackReturn PantographMimickController::on_configure(
     params_.prefix + "panto_a4",
     params_.prefix + "panto_a5",
     params_.prefix + "tool_theta_joint",
-    params_.prefix + "tool_phi_joint"};
+    params_.prefix + "tool_phi_joint",
+    params_.prefix + "needle_interaction_joint"};
 
   RCLCPP_INFO(get_node()->get_logger(), "configure successful");
   return controller_interface::CallbackReturn::SUCCESS;
@@ -90,6 +91,8 @@ PantographMimickController::command_interface_configuration() const
     pantograph_joint_names_[5] + "/" + HW_IF_POSITION);
   command_interfaces_config.names.push_back(
     pantograph_joint_names_[6] + "/" + HW_IF_POSITION);
+  command_interfaces_config.names.push_back(
+    pantograph_joint_names_[7] + "/" + HW_IF_POSITION);
 
   return command_interfaces_config;
 }
@@ -168,29 +171,32 @@ controller_interface::return_type PantographMimickController::update(
   q << pos_a1, pos_a5;
 
   // Calculate the pantograph (passive) joint positions
-  // Eigen::Vector<double, 5> full_joint_state;
-  // full_joint_state = pantograph_model_.populate_all_joint_positions(q);
+  Eigen::Vector<double, 5> panto_joint_state;
+  panto_joint_state = pantograph_model_.populate_all_joint_positions(q);
 
   // Calculate the passive joints of the complete system
-  Eigen::Vector<double, 7> full_joint_state;
+  Eigen::Vector<double, 8> full_joint_state;
   full_joint_state = pantograph_model_.populate_all_joint_positions_full_system(q);
 
-  double pos_a2 = full_joint_state[1];
-  double pos_a3 = full_joint_state[2];
-  double pos_a4 = full_joint_state[3];
+  double pos_a2 = panto_joint_state[1];
+  double pos_a3 = panto_joint_state[2];
+  double pos_a4 = panto_joint_state[3];
 
   double pos_theta = full_joint_state[5];
-  double pos_phi = full_joint_state[6];  // check for correct angle orientation
+  double pos_phi = full_joint_state[6];
+  double pos_needle = full_joint_state[7];
 
   // write mimics to HW
   command_interfaces_[0].set_value(pos_a2);
   command_interfaces_[1].set_value(pos_a3);
   command_interfaces_[2].set_value(pos_a4);
 
-  // Write pitch and orientation angles to end effector universal joint
+  // Write angles of the end effector universal joint
   command_interfaces_[3].set_value(pos_theta);
   command_interfaces_[4].set_value(pos_phi);
 
+  // Write needle position along insertion axis
+  command_interfaces_[5].set_value(pos_needle);
 
   return controller_interface::return_type::OK;
 }
