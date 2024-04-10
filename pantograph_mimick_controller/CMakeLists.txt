@@ -29,12 +29,14 @@ generate_parameter_library(
 )
 
 add_library(${PROJECT_NAME} SHARED
+  src/pantograph_mock_motors_controller.cpp
   src/pantograph_mimick_controller.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC

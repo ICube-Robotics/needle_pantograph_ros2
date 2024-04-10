@@ -14,8 +14,8 @@
 
 from launch.actions import DeclareLaunchArgument
 from launch import LaunchDescription
+from launch.conditions import IfCondition
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
-
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -65,6 +65,14 @@ def generate_launch_description():
         ]
     )
 
+    rviz_config_file = PathJoinSubstitution(
+        [
+            FindPackageShare('pantograph_description'),
+            'rviz',
+            'display_robot.rviz',
+        ]
+    )
+
     control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
@@ -82,7 +90,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         output='log',
-        # arguments=['-d', rviz_config_file],
+        arguments=['-d', rviz_config_file],
     )
 
     joint_state_broadcaster_spawner = Node(
@@ -97,17 +105,18 @@ def generate_launch_description():
         arguments=['pantograph_mimick_controller'],
     )
 
-    # effort_controller_spawner = Node(
-    #     package='controller_manager',
-    #     executable='spawner',
-    #     arguments=['forward_effort_controller'],
-    #     )
+    pantograph_mock_motors_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['pantograph_mock_motors_controller'],
+        condition=IfCondition(use_fake_hardware),
+    )
 
-    # tool_orientation_controller_spawner = Node(
-    #     package='controller_manager',
-    #     executable='spawner',
-    #     arguments=['tool_orientation_controller'],
-    # )
+    effort_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['forward_effort_controller'],
+    )
 
     nodes = [
         control_node,
@@ -115,8 +124,8 @@ def generate_launch_description():
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         pantograph_mimick_controller_spawner,
-        # effort_controller_spawner,
-        # tool_orientation_controller_spawner,
+        pantograph_mock_motors_controller_spawner,
+        effort_controller_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
