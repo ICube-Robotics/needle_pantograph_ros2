@@ -35,7 +35,7 @@ class PantographModel:
 
     def populate_all_angles(self, q):
         p = self.fk(q)
-        angle_values = self.ik(p)
+        angle_values = self.ik_full(p)
         return angle_values
 
     def fk(self, q):
@@ -63,6 +63,10 @@ class PantographModel:
         return np.array([x3, y3])
 
     def ik(self, p):
+        q_full = self.ik_full(p)
+        return np.array([q_full[0], q_full[4]])
+
+    def ik_full(self, p):
         assert (p.size == 2)
 
         P3 = p
@@ -85,6 +89,7 @@ class PantographModel:
         q5 = beta_5 - alpha_5
 
         # Passive joints
+        # TODO: check the math here...
         beta_2 = np.arccos(((self.a2**2) + (a13**2)-(self.a1**2))/(2 * self.a2 * a13))
         beta_3 = np.arccos(((self.a3**2) + (a53**2)-(self.a4**2))/(2 * self.a3 * a53))
         beta_4 = np.pi - beta_3 - beta_5
@@ -191,7 +196,7 @@ class PantographModel:
         P3_2D = np.array([P3[0], P3[1]])
 
         # Get angle of the pantograph joints using IKM
-        jnt_pos = self.ik(self, P3_2D)
+        jnt_pos = self.ik_full(self, P3_2D)
 
         # Return pantograph joint angles + needle orientation angles
         jnt_ext_pos = np.append(jnt_pos, [theta, phi])
