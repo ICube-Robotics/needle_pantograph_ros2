@@ -51,109 +51,12 @@ PantographModel::set_link_lenghts(
 Eigen::Vector<double, 5>
 PantographModel::populate_all_joint_positions(Eigen::Vector<double, 2> q)
 {
-  auto p = fk_panto_TC(q);
-  return ik_panto_TC(p);
+  auto p = fk(q);
+  return ik(p);
 }
 
 Eigen::Vector<double, 2>
 PantographModel::fk(Eigen::Vector<double, 2> q)
-{
-  // Compute position at A2 and A4
-  Eigen::Vector2d p_at_A2, p_at_A4;
-  p_at_A2[0] = l_a1_ * std::cos(q[0]);
-  p_at_A2[1] = l_a1_ * std::sin(q[0]);
-  p_at_A4[0] = l_a4_ * std::cos(q[1]) - l_a5_;
-  p_at_A4[1] = l_a4_ * std::sin(q[1]);
-
-  // Coordinates of P3 with respect to P1
-  double dist_A2_to_A4 = (p_at_A2 - p_at_A4).norm();
-
-  double P2Ph = (std::pow(l_a2_, 2) - std::pow(l_a3_, 2) +
-    std::pow(dist_A2_to_A4, 2)) /
-    (2 * dist_A2_to_A4);
-
-  // Eigen::Vector2d Ph = p_at_A2 + (P2Ph / dist_A2_to_A4) * (p_at_A4 - p_at_A2);
-  Eigen::Vector2d Ph;
-  Ph[0] = p_at_A2[0] + (P2Ph / dist_A2_to_A4) * (p_at_A4[0] - p_at_A2[0]);
-  Ph[1] = p_at_A2[1] + (P2Ph / dist_A2_to_A4) * (p_at_A4[1] - p_at_A2[1]);
-
-  double P3Ph = std::sqrt(std::pow(l_a2_, 2) - std::pow(P2Ph, 2));
-  Eigen::Vector2d p_at_A3;
-  p_at_A3[0] = Ph[0] + (P3Ph / dist_A2_to_A4) * (p_at_A4[1] - p_at_A2[1]);
-  p_at_A3[1] = Ph[1] - (P3Ph / dist_A2_to_A4) * (p_at_A4[0] - p_at_A2[0]);
-
-  return p_at_A3;
-}
-
-Eigen::Vector<double, 5>
-PantographModel::ik(Eigen::Vector<double, 2> p)
-{
-  Eigen::Vector<double, 5> jnt_pos;
-
-  double a13 = p.norm();
-  double a53 = std::sqrt(std::pow(p[0] + l_a5_, 2) + std::pow(p[1], 2));
-
-  double alpha1 =
-    std::acos((std::pow(l_a1_, 2) + std::pow(a13, 2) - std::pow(l_a2_, 2)) / (2 * l_a1_ * a13));
-  double beta1 = std::atan2(p[1], -p[0]);
-  jnt_pos[0] = PI_CST - alpha1 - beta1;
-
-  double alpha5 = std::atan2(p[1], p[0] + l_a5_);
-  double beta5 =
-    std::acos((std::pow(a53, 2) + std::pow(l_a4_, 2) - std::pow(l_a3_, 2)) / (2 * a53 * l_a4_));
-  jnt_pos[4] = alpha5 + beta5;
-
-  // Finding the angles theta2 and theta3 for the simulation
-  double beta2 =
-    std::acos((std::pow(l_a2_, 2) + std::pow(a13, 2) - std::pow(l_a1_, 2)) / (2 * l_a2_ * a13));
-  double beta3 =
-    std::acos((std::pow(l_a3_, 2) + std::pow(a53, 2) - std::pow(l_a4_, 2)) / (2 * l_a3_ * a53));
-  double beta4 = PI_CST - beta3 - beta5;
-
-  double alpha2 = PI_CST - alpha1 - beta2;
-  double alpha3 = PI_CST - alpha5 - beta1;
-
-  jnt_pos[1] = PI_CST - alpha2;
-  jnt_pos[2] = PI_CST - beta2 - alpha3 - beta3;
-  jnt_pos[3] = -(PI_CST - beta4);
-
-  return jnt_pos;
-}
-
-Eigen::Matrix<double, 2, 2>
-PantographModel::jacobian(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> q_dot)
-{
-  // (void) q;
-  // (void) q_dot;
-  // TODO(tpoignonec): add jacobian computation
-  // throw std::logic_error("Function not yet implemented!");
-
-  // Get the angles of all the pantograph joints
-  Eigen::Vector<double, 5> jnt_pos;
-  jnt_pos = populate_all_joint_positions(q);
-
-  double theta2 = jnt_pos[1];  //  Check if IKM is correct
-  double theta4 = jnt_pos[3];
-
-  // Jacobian coefficients according to T.CESARE report
-  double S14S42 = sin(q(0) - theta4) / sin(theta4 - theta2);
-  double S24S42 = sin(q(1) - theta4) / sin(theta4 - theta2);
-
-  double J11 = -l_a1_ * (sin(q(1)) + sin(theta2) * S14S42);
-  double J12 = l_a4_ * sin(theta2) * S24S42;
-  double J21 = l_a1_ * (cos(q(1)) + cos(theta2) * S14S42);
-  double J22 = -l_a4_ * cos(theta2) * S24S42;
-
-  Eigen::Matrix2d J;
-
-  J << J11, J21,
-    J21, J22;
-
-  return J;
-}
-
-Eigen::Vector<double, 2>
-PantographModel::fk_panto_TC(Eigen::Vector<double, 2> q)
 {
   Eigen::Vector2d P2, P3, P4, P5;
 
@@ -196,7 +99,7 @@ PantographModel::fk_panto_TC(Eigen::Vector<double, 2> q)
 }
 
 Eigen::Vector<double, 5>
-PantographModel::ik_panto_TC(Eigen::Vector<double, 2> P3)
+PantographModel::ik(Eigen::Vector<double, 2> P3)
 {
   /* Inverse kinematics model of the pantograph, as calculated in
   T.CESARE report. the angles thetai are used to simulate the position
@@ -266,6 +169,47 @@ PantographModel::ik_panto_TC(Eigen::Vector<double, 2> P3)
   return jnt_pos;
 }
 
+Eigen::Matrix<double, 2, 2>
+PantographModel::jacobian(Eigen::Vector<double, 2> q)
+{
+  Eigen::Vector2d P2, P3, P4, P5;
+  P3 = fk(q);
+  P5 << l_a5_, 0;
+  // Coords of P2 in base frame
+  P2[0] = l_a1_ * std::cos(q[0]);
+  P2[1] = l_a1_ * std::sin(q[0]);
+  // Coords of P4 in base frame
+  P4[0] = P5[0] + l_a4_ * std::cos(q[1]);
+  P4[1] = P5[1] + l_a4_ * std::sin(q[1]);
+
+  // Intermediate variables
+  double a24 = (P2 - P4).norm();
+  double gamma2 =
+    std::acos(
+    (std::pow(l_a2_, 2) + std::pow(a24, 2) - std::pow(l_a3_, 2)) /
+    (2 * a24 * l_a2_));
+  double delta = std::atan2(P4[1] - P2[1], P4[0] - P2[0]);
+
+  double theta2 = gamma2 + delta;
+  double theta4 = std::atan2(P3[1] - P4[1], P3[0] - P4[0]);
+
+  double S14S42 = sin(q(0) - theta4) / sin(theta4 - theta2);
+  double S24S42 = sin(q(1) - theta4) / sin(theta4 - theta2);
+
+  // Jacobian coefficients according to T.CESARE report
+  double J11 = -l_a1_ * (sin(q(0)) + sin(theta2) * S14S42);
+  double J12 = l_a4_ * sin(theta2) * S24S42;
+  double J21 = l_a1_ * (cos(q(0)) + cos(theta2) * S14S42);
+  double J22 = -l_a4_ * cos(theta2) * S24S42;
+
+  Eigen::Matrix2d J;
+
+  J << J11, J21,
+    J21, J22;
+
+  return J;
+}
+
 Eigen::Vector<double, 3>
 PantographModel::fk_system(Eigen::Vector<double, 2> q)
 {
@@ -280,7 +224,7 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
 
   // Get coords of P3 in base frame according to FKM
   Eigen::Vector2d P3_2D;
-  P3_2D = fk_panto_TC(q);
+  P3_2D = fk(q);
 
   // Convert P3 in the plane to coords in 3D
   P3 << P3_2D, 0;
@@ -357,7 +301,7 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
 
   // Get angles of the pantograph joints using IKM
   Eigen::Vector<double, 5> jnt_pos;
-  jnt_pos = ik_panto_TC(P3_2D);
+  jnt_pos = ik(P3_2D);
 
   // Return pantograph joints angles + needle orientation angles
 
