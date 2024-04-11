@@ -32,7 +32,7 @@ class InteractiveFakeOperator(Node):
 
         # create an interactive marker server on the topic namespace simple_marker
         self.marker_server = InteractiveMarkerServer(self, 'fake_operator')
-        self.marker_position = np.array([0.08, 0.18, 0.0])
+        self.marker_position = np.array([0.08, 0.18, 0.03])
 
         # create an interactive marker for our server
         int_marker = InteractiveMarker()
@@ -48,13 +48,13 @@ class InteractiveFakeOperator(Node):
         marker = Marker()
         marker.type = Marker.SPHERE
         # marker.always_visible = True
-        marker.scale.x = 0.02
-        marker.scale.y = 0.02
-        marker.scale.z = 0.02
+        marker.scale.x = 0.01
+        marker.scale.y = 0.01
+        marker.scale.z = 0.01
         marker.color.r = 1.0
         marker.color.g = 0.
         marker.color.b = 0.
-        marker.color.a = 0.7
+        marker.color.a = 0.6
 
         visual_control = InteractiveMarkerControl()
         visual_control.always_visible = True
