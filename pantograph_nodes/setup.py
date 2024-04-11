@@ -24,7 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'interactive_fake_operator = pantograph_nodes.interactive_fake_operator:main'
+            'interactive_fake_operator = pantograph_nodes.interactive_fake_operator:main',
+            'haptic_control = pantograph_nodes.haptic_control:main'
         ],
     },
 )
