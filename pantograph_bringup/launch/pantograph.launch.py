@@ -69,7 +69,7 @@ def generate_launch_description():
         [
             FindPackageShare('pantograph_description'),
             'rviz',
-            'display_robot.rviz',
+            'display_robot_2D.rviz',
         ]
     )
 
@@ -105,6 +105,13 @@ def generate_launch_description():
         arguments=['pantograph_mimick_controller'],
     )
 
+    effort_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['forward_effort_controller'],
+    )
+
+    # Simulation utils
     pantograph_mock_motors_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
@@ -117,10 +124,17 @@ def generate_launch_description():
         arguments=['pantograph_mock_operator_controller'],
         condition=IfCondition(use_fake_hardware),
     )
-    effort_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['forward_effort_controller'],
+    interactive_fake_operator_node = Node(
+        package='pantograph_nodes',
+        executable='interactive_fake_operator',
+        output='both',
+        condition=IfCondition(use_fake_hardware),
+    )
+    haptic_control_node = Node(
+        package='pantograph_nodes',
+        executable='haptic_control',
+        output='both',
+        condition=IfCondition(use_fake_hardware),
     )
 
     nodes = [
@@ -129,9 +143,11 @@ def generate_launch_description():
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         pantograph_mimick_controller_spawner,
+        effort_controller_spawner,
         pantograph_mock_motors_controller_spawner,
         pantograph_mock_operator_controller_spawner,
-        effort_controller_spawner,
+        interactive_fake_operator_node,
+        haptic_control_node
     ]
 
     return LaunchDescription(declared_arguments + nodes)
