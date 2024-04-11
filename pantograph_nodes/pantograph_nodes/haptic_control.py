@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Copyright 2024 ICUBE Laboratory, University of Strasbourg
+# License: Apache License, Version 2.0
+# Author: Thibault Poignonec (tpoignonec@unistra.fr)
+
 import rclpy
 from rclpy.node import Node
 
@@ -24,14 +28,12 @@ class HapticControl(Node):
             '/forward_effort_controller/commands',
             5
         )
-
         self.joint_states_subscription = \
             self.create_subscription(
                 JointStateMsg, '/joint_states', self.joint_states_callback, 1)
 
-        # ************ TODO *************
+        # ------------ TODO -------------
         self.publisher_marker_ = None
-
         # TODO: add your code here
         # hint: create a marker publisher to visualize the haptic environment
         # hint: store the dimension and position of obstacles to use below
@@ -45,17 +47,16 @@ class HapticControl(Node):
         self.env_dict['p_y_max'] = 0.2
         self.env_dict['p_x_min'] = -0.054
         self.env_dict['p_x_max'] = self.model.a5 + 0.054
-        # ***********************************
+        # -------------------------------
 
-        # ************ TODO *************
+        # ------------ TODO -------------
         self.publisher_applied_forces_ = None
-
         # TODO: add your code here
         # hint: create a geometry_msgs.msg.Wrench publisher to visualize the applied force
 
         self.publisher_applied_forces_ = \
             self.create_publisher(WrenchMsg, '/applied_forces', 1)
-        # ***********************************
+        # -------------------------------
 
         # Prepare data
         self.last_joint_states_msg = None
@@ -72,9 +73,9 @@ class HapticControl(Node):
         if (self.last_joint_states_msg is None):
             return
         self.update_joint_state()
-        # ---------------------------------
+        # *******************************--
         # Update robot state
-        # ---------------------------------
+        # *******************************--
         # compute cartesian state
         self.p = self.model.fk(self.q)
         self.J = self.model.jacobian(self.q)
@@ -82,20 +83,20 @@ class HapticControl(Node):
 
         self.p_dot = np.array([0.0, 0.0])
 
-        # ************ TODO *************
+        # ------------ TODO -------------
         # TODO: add your code here
         # hint: compute the cartesian velocity p_dot from self.q_dot using the Jacobian matrix
 
         self.p_dot = (self.J.T).dot(self.q_dot)
-        # ***********************************
+        # -------------------------------
 
-        # ---------------------------------
+        # *******************************--
         # Compute cartesian force feedback
-        # ---------------------------------
+        # *******************************--
 
         self.F_cmd = np.array([0.0, 0.0])
 
-        # ************ TODO *************
+        # ------------ TODO -------------
         # TODO: add your code here
         K = 400.0
         if self.p[0] > self.env_dict['p_x_max']:
@@ -116,21 +117,19 @@ class HapticControl(Node):
             modulus_strain = self.env_dict['obstacle_radius'] - modulus_vec_radius
             strain = modulus_strain * direction_vec_radius
             self.F_cmd += strain * K_spheres - self.p_dot * 0.1 * np.sqrt(K_spheres)
-        # ***********************************
+        # -------------------------------
 
         # ----------------------------
         # Compute torque command
         # ----------------------------
-        tau_q1 = 0.0
-        tau_q5 = 0.0
-        self.tau_cmd = np.array([tau_q1, tau_q5])
 
-        # ************ TODO *************
+        # ------------ TODO -------------
+        self.tau_cmd = np.array([0.0, 0.0])
         # TODO: add your code here
         # hint: compute the torque tau_cmd from the force F_cmd
 
         self.tau_cmd = np.linalg.inv(self.J.T) @ self.F_cmd.reshape((2, 1))
-        # ***********************************
+        # -------------------------------
 
         # ----------------------------
         # Send torque command
@@ -142,11 +141,11 @@ class HapticControl(Node):
         if (self.F_cmd is None):
             return
 
-        # -------------------------------
+        # *******************************
         # Visualization of force feedback
-        # -------------------------------
+        # *******************************
 
-        # ************ TODO *************
+        # ------------ TODO -------------
         # TODO: add your code here
         # hint: use Rviz marker to visualize the force stored in "self.F_cmd"
 
@@ -156,13 +155,13 @@ class HapticControl(Node):
         msg_applied_wrench.wrench.force.x = self.F_cmd[0]
         msg_applied_wrench.wrench.force.y = self.F_cmd[1]
         self.publisher_applied_forces_.publish(msg_applied_wrench)
-        # ***********************************
-
         # -------------------------------
+
+        # *******************************
         # Visualization of environment
-        # -------------------------------
+        # *******************************
 
-        # ************ TODO *************
+        # ------------ TODO -------------
         # TODO: add your code here
         # hint: use Rviz marker(s) to visualize the haptic environment
 
@@ -250,12 +249,14 @@ class HapticControl(Node):
         marker.color.a = 1.0
         marker.color.r = 1.0
         self.publisher_marker_.publish(marker)
-        # ***********************************
+        # -------------------------------
 
     def joint_states_callback(self, joint_states_msg):
+        # Do not change this!
         self.last_joint_states_msg = joint_states_msg
 
     def update_joint_state(self):
+        # Do not change this!
         jnt_msg = self.last_joint_states_msg
         jnt_position_dict = {}
         jnt_velocity_dict = {}
@@ -285,12 +286,14 @@ class HapticControl(Node):
         ])
 
     def send_torque_cmd(self, tau_cmd):
+        # Do not change this!
         torque_cmd_msg = Float64MultiArray()
         torque_cmd_msg.data = [tau_cmd[0], tau_cmd[1]]
         self.torque_cmd_publisher_.publish(torque_cmd_msg)
 
 
 def main(args=None):
+    # Do not change this!
     rclpy.init(args=args)
     node = HapticControl()
     rclpy.spin(node)

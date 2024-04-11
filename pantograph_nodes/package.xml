@@ -3,7 +3,7 @@
 <package format="3">
   <name>pantograph_nodes</name>
   <version>0.0.0</version>
-  <description>Python nodes utils for the pantograph </description>
+  <description>Python nodes for the lab session at TPS </description>
   <maintainer email="tpoignonec@unistra.fr">tpoignonec</maintainer>
   <license>TODO: License declaration</license>
 
