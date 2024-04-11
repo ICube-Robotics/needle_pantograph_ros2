@@ -14,6 +14,9 @@ controller_manager:
     pantograph_mock_motors_controller:
       type: pantograph_mimick_controller/PantographMockMotorsController
 
+    pantograph_mock_operator_controller:
+      type: pantograph_mimick_controller/PantographMockOperatorController
+
     forward_effort_controller:
       type: effort_controllers/JointGroupEffortController
 
