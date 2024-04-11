@@ -14,4 +14,12 @@
       Computes acceleration from commanded torques and propagates state to motor velocity and position.
     </description>
   </class>
+  <class
+    name="pantograph_mimick_controller/PantographMockOperatorController"
+    type="pantograph_mimick_controller::PantographMockOperatorController"
+    base_class_type="controller_interface::ControllerInterface">
+    <description>
+      IMock tau ext based on impedance control-like operator ineraction.
+    </description>
+  </class>
 </library>

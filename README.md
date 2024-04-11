@@ -42,6 +42,10 @@ ros2 launch pantograph_bringup pantograph.launch.py
 # Publish torque command
 ros2 topic pub -r 200 \
      /forward_effort_controller/commands std_msgs/msg/Float64MultiArray "data: [0.5, 0.0]"
+
+# Mock pHRI (start an interactive RVIZ marker to interact with the pantograph)
+ros2 run pantograph_nodes interactive_fake_operator
+
 ```
 
 ```bash

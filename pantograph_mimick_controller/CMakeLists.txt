@@ -29,8 +29,9 @@ generate_parameter_library(
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/pantograph_mock_motors_controller.cpp
   src/pantograph_mimick_controller.cpp
+  src/pantograph_mock_motors_controller.cpp
+  src/pantograph_mock_operator_controller.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

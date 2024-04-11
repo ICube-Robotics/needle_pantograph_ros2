@@ -111,10 +111,10 @@ def generate_launch_description():
         arguments=['pantograph_mock_motors_controller'],
         condition=IfCondition(use_fake_hardware),
     )
-    fake_tau_ext_controller_spawner = Node(
+    pantograph_mock_operator_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['fake_tau_ext_controller'],
+        arguments=['pantograph_mock_operator_controller'],
         condition=IfCondition(use_fake_hardware),
     )
     effort_controller_spawner = Node(
@@ -130,7 +130,7 @@ def generate_launch_description():
         joint_state_broadcaster_spawner,
         pantograph_mimick_controller_spawner,
         pantograph_mock_motors_controller_spawner,
-        fake_tau_ext_controller_spawner,
+        pantograph_mock_operator_controller_spawner,
         effort_controller_spawner,
     ]
 
