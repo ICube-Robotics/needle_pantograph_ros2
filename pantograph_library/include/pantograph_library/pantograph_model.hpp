@@ -47,19 +47,13 @@ public:
   Eigen::Vector<double, 5> ik(Eigen::Vector<double, 2> p);
 
   /// Jacobian J(q, q_dot), where q = [joint_a1, joint_a5].T
-  Eigen::Matrix<double, 2, 2> jacobian(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> q_dot);
+  Eigen::Matrix<double, 2, 2> jacobian(Eigen::Vector<double, 2> q);
 
   /// Forward kinematics of the complete system p = fk_needle(P3) = fk_needle(fk([q1,q2]))
   Eigen::Vector<double, 3> fk_system(Eigen::Vector<double, 2> q);
 
   /// Inverse kinematics of the complete system p = fk_needle(P3) = fk_needle(fk([q1,q2]))
   Eigen::Vector<double, 8> ik_system(Eigen::Vector<double, 3> p);
-
-  /// Forward kinematics of the pantograph according to the equations of T.CESARE report
-  Eigen::Vector<double, 2> fk_panto_TC(Eigen::Vector<double, 2> q);
-
-  /// Inverse kinematics of the pantograph according to the equations of T.CESARE report
-  Eigen::Vector<double, 5> ik_panto_TC(Eigen::Vector<double, 2> p);
 
   /// Populate all joints position of the full system (pantograph + needle)
   Eigen::Vector<double, 8> populate_all_joint_positions_full_system(Eigen::Vector<double, 2> q);

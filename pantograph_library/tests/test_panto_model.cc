@@ -25,7 +25,7 @@ TEST(TestModel, TestPantoFKM) {
   P3_matlab[1] = 0.149223285959824;
 
   // Coords of P3 according to C++ model
-  P3_cpp = panto_model_.fk_panto_TC(q);
+  P3_cpp = panto_model_.fk(q);
 
   /*Expect values to be equal (up to a 1e-10 error) between
   the C++ and the MATLAB model */
@@ -55,7 +55,7 @@ TEST(TestModel, TestPantoIKM) {
   q_matlab[1] = -0.500000000000000;
 
   // q values according to C++ model
-  joints = panto_model_.ik_panto_TC(P3);
+  joints = panto_model_.ik(P3);
   q_cpp[0] = joints[0];
   q_cpp[1] = joints[4];
 
