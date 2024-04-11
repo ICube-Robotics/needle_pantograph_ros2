@@ -16,10 +16,9 @@ from pantograph_library import PantographModel
 from visualization_msgs.msg import Marker
 
 
-class HapticControl(Node):
-
+class NodeTutorialHaptics(Node):
     def __init__(self):
-        super().__init__('haptic_control_node')
+        super().__init__('node_tutorial_haptics')
         self.model = PantographModel()  # kinematic model
 
         # Setup communication
@@ -295,7 +294,7 @@ class HapticControl(Node):
 def main(args=None):
     # Do not change this!
     rclpy.init(args=args)
-    node = HapticControl()
+    node = NodeTutorialHaptics()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

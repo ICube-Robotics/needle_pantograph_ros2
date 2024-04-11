@@ -130,9 +130,9 @@ def generate_launch_description():
         output='both',
         condition=IfCondition(use_fake_hardware),
     )
-    haptic_control_node = Node(
+    node_tutorial_haptics = Node(
         package='pantograph_nodes',
-        executable='haptic_control',
+        executable='node_tutorial_haptics',
         output='both',
         condition=IfCondition(use_fake_hardware),
     )
@@ -147,7 +147,7 @@ def generate_launch_description():
         pantograph_mock_motors_controller_spawner,
         pantograph_mock_operator_controller_spawner,
         interactive_fake_operator_node,
-        haptic_control_node
+        node_tutorial_haptics
     ]
 
     return LaunchDescription(declared_arguments + nodes)

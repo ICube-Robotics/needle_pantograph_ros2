@@ -25,7 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'interactive_fake_operator = pantograph_nodes.interactive_fake_operator:main',
-            'haptic_control = pantograph_nodes.haptic_control:main'
+            'node_tutorial_haptics = pantograph_nodes.node_tutorial_haptics:main'
         ],
     },
 )
