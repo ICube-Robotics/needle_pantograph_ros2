@@ -40,6 +40,7 @@
   <!-- ==========  Fulcrum =========== -->
 
   <link name = "panto_link_fulcrum">
+    <!--
     <visual>
       <geometry>
         <mesh filename="package://pantograph_description/meshes/mesh_fulcrum.stl" scale="0.001 0.001 0.001"/>
@@ -47,6 +48,7 @@
       <material name = "white_alpha"/>
       <origin xyz = "0 0 0" rpy = "0 0 0"/>
     </visual>
+    -->
   </link>
 
   <joint name = "panto_base_to_fulcrum" type="fixed">
@@ -198,6 +200,7 @@
 
   <!-- tool roll angle-->
   <link name = "tool_phi_link">
+    <!--
     <visual>
       <geometry>
         <cylinder length = "0.2" radius = "0.0025"/>
@@ -205,6 +208,7 @@
       <material name = "white_alpha"/>
       <origin xyz = "0 0 0.1" rpy = "0 0 0"/>
     </visual>
+    -->
   </link>
 
   <joint name="tool_phi_joint" type="continuous">
