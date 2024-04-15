@@ -21,17 +21,36 @@ class NodeTutorialHaptics(Node):
         super().__init__('node_tutorial_haptics')
         self.model = PantographModel()  # kinematic model
 
+        # *********************************
         # Setup communication
+        # *********************************
+        self.joint_states_subscription = \
+            self.create_subscription(
+                JointStateMsg, '/joint_states', self.joint_states_callback, 1)
+
+        # ------------ TODO n°1 -------------
+        self.torque_cmd_publisher_ = None
+        # TODO: add your code here
+        # hint: create a publisher to send the force command to the robot using the
+        #       function "pub = self.create_publisher(<Type>, <topic_name>, <queue_size>)"
+
         self.torque_cmd_publisher_ = self.create_publisher(
             Float64MultiArray,
             '/forward_effort_controller/commands',
             5
         )
-        self.joint_states_subscription = \
-            self.create_subscription(
-                JointStateMsg, '/joint_states', self.joint_states_callback, 1)
+        # -------------------------------
 
-        # ------------ TODO -------------
+        # ------------ TODO n°5 -------------
+        self.publisher_applied_forces_ = None
+        # TODO: add your code here
+        # hint: create a geometry_msgs.msg.Wrench publisher to visualize the applied force
+
+        self.publisher_applied_forces_ = \
+            self.create_publisher(WrenchMsg, '/applied_forces', 1)
+        # -------------------------------
+
+        # ------------ TODO n°9 -------------
         self.publisher_marker_ = None
         # TODO: add your code here
         # hint: create a marker publisher to visualize the haptic environment
@@ -42,28 +61,28 @@ class NodeTutorialHaptics(Node):
         self.env_dict = {}
         self.env_dict['obstacle_position'] = np.array([self.model.a5/2, 0.13])
         self.env_dict['obstacle_radius'] = 0.02
+        self.env_dict['obstacle_K'] = 50.0
+        self.env_dict['obstacle_D'] = 0.1 * np.sqrt(self.env_dict['obstacle_K'])
+
         self.env_dict['p_y_min'] = 0.07
         self.env_dict['p_y_max'] = 0.2
         self.env_dict['p_x_min'] = -0.054
         self.env_dict['p_x_max'] = self.model.a5 + 0.054
+        self.env_dict['bounds_K'] = 400.0
+        self.env_dict['bounds_D'] = 0.2 * np.sqrt(self.env_dict['obstacle_K'])
         # -------------------------------
 
-        # ------------ TODO -------------
-        self.publisher_applied_forces_ = None
-        # TODO: add your code here
-        # hint: create a geometry_msgs.msg.Wrench publisher to visualize the applied force
-
-        self.publisher_applied_forces_ = \
-            self.create_publisher(WrenchMsg, '/applied_forces', 1)
-        # -------------------------------
-
+        # *********************************
         # Prepare data
+        # *********************************
         self.last_joint_states_msg = None
         self.F_cmd = None
         self.Ts = 0.002  # sampling period in seconds
         rate_visualization = 30
 
+        # *********************************
         # Start timers
+        # *********************************
         self.timer = self.create_timer(self.Ts, self.update)
         self.timer_visualization = self.create_timer(1/rate_visualization, self.visualization_haptics)
 
@@ -72,68 +91,91 @@ class NodeTutorialHaptics(Node):
         if (self.last_joint_states_msg is None):
             return
         self.update_joint_state()
-        # *******************************--
+
+        # *********************************
         # Update robot state
-        # *******************************--
+        # *********************************
         # compute cartesian state
         self.p = self.model.fk(self.q)
         self.J = self.model.jacobian(self.q)
-        # print('p = ', self.p)
 
-        self.p_dot = np.array([0.0, 0.0])
-
-        # ------------ TODO -------------
+        # ------------ TODO n° 4 -------------
         # TODO: add your code here
         # hint: compute the cartesian velocity p_dot from self.q_dot using the Jacobian matrix
 
-        self.p_dot = (self.J.T).dot(self.q_dot)
+        self.p_dot = np.array([0.0, 0.0])
+        self.p_dot = (self.J).dot(self.q_dot)
         # -------------------------------
 
-        # *******************************--
+        # *********************************
         # Compute cartesian force feedback
-        # *******************************--
+        # *********************************
 
         self.F_cmd = np.array([0.0, 0.0])
 
-        # ------------ TODO -------------
+        # ------------ TODO n°9 -------------
         # TODO: add your code here
-        K = 400.0
         if self.p[0] > self.env_dict['p_x_max']:
-            self.F_cmd += np.array([self.env_dict['p_x_max'] - self.p[0], 0.0]) * K - self.p_dot * 0.2 * np.sqrt(K)
+            self.F_cmd += \
+                np.array([self.env_dict['p_x_max'] - self.p[0], 0.0]) * self.env_dict['bounds_K'] \
+                - self.p_dot * self.env_dict['bounds_D']
         if self.p[0] < self.env_dict['p_x_min']:
-            self.F_cmd += np.array([self.env_dict['p_x_min'] - self.p[0], 0.0]) * K - self.p_dot * 0.2 * np.sqrt(K)
+            self.F_cmd += \
+                np.array([self.env_dict['p_x_min'] - self.p[0], 0.0]) * self.env_dict['bounds_K'] \
+                - self.p_dot * self.env_dict['bounds_D']
         if self.p[1] > self.env_dict['p_y_max']:
-            self.F_cmd += np.array([0.0, self.env_dict['p_y_max'] - self.p[1]]) * K - self.p_dot * 0.2 * np.sqrt(K)
+            self.F_cmd += \
+                np.array([0.0, self.env_dict['p_y_max'] - self.p[1]]) * self.env_dict['bounds_K'] \
+                - self.p_dot * self.env_dict['bounds_D']
         if self.p[1] < self.env_dict['p_y_min']:
-            self.F_cmd += np.array([0.0, self.env_dict['p_y_min'] - self.p[1]]) * K - self.p_dot * 0.2 * np.sqrt(K)
+            self.F_cmd += \
+                np.array([0.0, self.env_dict['p_y_min'] - self.p[1]]) * self.env_dict['bounds_K'] \
+                - self.p_dot * self.env_dict['bounds_D']
 
-        K_spheres = 50.0
         if np.linalg.norm(self.p - self.env_dict['obstacle_position']) < self.env_dict['obstacle_radius']:
-            vec_radius = np.array(self.p - self.env_dict['obstacle_position'])
-            modulus_vec_radius = np.linalg.norm(vec_radius)
-            direction_vec_radius = vec_radius / modulus_vec_radius
+            vect_center_sphere_to_p = np.array(self.p - self.env_dict['obstacle_position'])
+            dist_center_sphere_to_p = np.linalg.norm(vect_center_sphere_to_p)
+            normalized_vect_center_sphere_to_p = vect_center_sphere_to_p / dist_center_sphere_to_p
+            strain = (self.env_dict['obstacle_radius'] - dist_center_sphere_to_p) * normalized_vect_center_sphere_to_p
+            self.F_cmd += strain * self.env_dict['obstacle_K'] - self.p_dot * self.env_dict['obstacle_D']
+        # -------------------------------
 
-            modulus_strain = self.env_dict['obstacle_radius'] - modulus_vec_radius
-            strain = modulus_strain * direction_vec_radius
-            self.F_cmd += strain * K_spheres - self.p_dot * 0.1 * np.sqrt(K_spheres)
+        # ------------ TODO n°11 -------------
+        # TODO: add your code here
+        # goal: X and Y limits
+        self.F_cmd += np.array([0.0, 0.0])
+        # -------------------------------
+
+        # ------------ TODO n°12 -------------
+        # TODO: add your code here
+        # goal: sphere obstacle
+        self.F_cmd += np.array([0.0, 0.0])
         # -------------------------------
 
         # ----------------------------
         # Compute torque command
         # ----------------------------
 
-        # ------------ TODO -------------
+        # ------------ TODO n°3-------------
         self.tau_cmd = np.array([0.0, 0.0])
         # TODO: add your code here
         # hint: compute the torque tau_cmd from the force F_cmd
 
-        self.tau_cmd = np.linalg.inv(self.J.T) @ self.F_cmd.reshape((2, 1))
+        self.tau_cmd = np.linalg.inv(self.J) @ self.F_cmd.reshape((2, 1))
         # -------------------------------
 
         # ----------------------------
         # Send torque command
         # ----------------------------
-        self.send_torque_cmd(self.tau_cmd.reshape((2,)))
+        torque_cmd_msg = Float64MultiArray()
+        torque_cmd_msg.data = self.tau_cmd.reshape((2,)).tolist()
+
+        # ------------ TODO n°2 -------------
+        # TODO: add your code here
+        # hint: send the torque command message to the robot using
+        #       the publisher "self.torque_cmd_publisher_"
+        self.torque_cmd_publisher_.publish(torque_cmd_msg)
+        # -------------------------------
 
     def visualization_haptics(self):
         # Check that update() has been called before
@@ -144,7 +186,7 @@ class NodeTutorialHaptics(Node):
         # Visualization of force feedback
         # *******************************
 
-        # ------------ TODO -------------
+        # ------------ TODO n° 6 -------------
         # TODO: add your code here
         # hint: use Rviz marker to visualize the force stored in "self.F_cmd"
 
@@ -160,7 +202,7 @@ class NodeTutorialHaptics(Node):
         # Visualization of environment
         # *******************************
 
-        # ------------ TODO -------------
+        # ------------ TODO n°10 and n°13 -------------
         # TODO: add your code here
         # hint: use Rviz marker(s) to visualize the haptic environment
 
@@ -169,14 +211,14 @@ class NodeTutorialHaptics(Node):
         marker.ns = 'sphere_obstacle'
         marker.header.frame_id = 'world'
         marker.id = 0
-        marker.type = Marker.SPHERE
+        marker.type = Marker.CYLINDER
         marker.action = Marker.ADD
         marker.pose.position.x = self.env_dict['obstacle_position'][0]
         marker.pose.position.y = self.env_dict['obstacle_position'][1]
-        marker.pose.position.z = 0.0
+        marker.pose.position.z = -0.03
         marker.scale.x = 2.0 * self.env_dict['obstacle_radius']
         marker.scale.y = 2.0 * self.env_dict['obstacle_radius']
-        marker.scale.z = 2.0 * self.env_dict['obstacle_radius']
+        marker.scale.z = 0.02
         marker.color.a = 1.0
         marker.color.r = 1.0
         self.publisher_marker_.publish(marker)
@@ -283,12 +325,6 @@ class NodeTutorialHaptics(Node):
             jnt_effort_dict['panto_a1'],
             jnt_effort_dict['panto_a5']
         ])
-
-    def send_torque_cmd(self, tau_cmd):
-        # Do not change this!
-        torque_cmd_msg = Float64MultiArray()
-        torque_cmd_msg.data = [tau_cmd[0], tau_cmd[1]]
-        self.torque_cmd_publisher_.publish(torque_cmd_msg)
 
 
 def main(args=None):
