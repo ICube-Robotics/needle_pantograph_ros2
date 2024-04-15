@@ -11,7 +11,7 @@ import numpy as np
 
 from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState as JointStateMsg
-from geometry_msgs.msg import WrenchStamped as WrenchMsg
+from geometry_msgs.msg import WrenchStamped
 from pantograph_library import PantographModel
 from visualization_msgs.msg import Marker
 
@@ -47,7 +47,7 @@ class NodeTutorialHaptics(Node):
         # hint: create a geometry_msgs.msg.Wrench publisher to visualize the applied force
 
         self.publisher_applied_forces_ = \
-            self.create_publisher(WrenchMsg, '/applied_forces', 1)
+            self.create_publisher(WrenchStamped, '/applied_forces', 1)
         # -------------------------------
 
         # ------------ TODO n°9 -------------
@@ -190,7 +190,7 @@ class NodeTutorialHaptics(Node):
         # TODO: add your code here
         # hint: use Rviz marker to visualize the force stored in "self.F_cmd"
 
-        msg_applied_wrench = WrenchMsg()
+        msg_applied_wrench = WrenchStamped()
         msg_applied_wrench.header.stamp = self.get_clock().now().to_msg()
         msg_applied_wrench.header.frame_id = 'panto_tool0'
         msg_applied_wrench.wrench.force.x = self.F_cmd[0]
