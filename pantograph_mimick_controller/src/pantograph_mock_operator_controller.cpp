@@ -168,11 +168,14 @@ controller_interface::return_type PantographMockOperatorController::update(
 
   Eigen::Vector2d q = Eigen::Vector2d(pos_a1, pos_a5);
   Eigen::Vector2d q_dot = Eigen::Vector2d(vel_a1, vel_a5);
+  // Nb. although this is a parallel robot, the convention in "pantograph_library" is as follows:
+  //  * p_dot = J @ q_dot
+  //  * f_ext = J.T @ tau
   auto J = pantograph_model_.jacobian(q);
   Eigen::Vector2d p = pantograph_model_.fk(q);
-  Eigen::Vector2d p_dot = J.transpose() * q_dot;
+  Eigen::Vector2d p_dot = J * q_dot;
   double cst = 9;
-  auto tau = J.transpose().inverse() * (
+  auto tau = J.inverse() * (
     cst * (ph - p) - 2 * 0.9 * sqrt(cst) * p_dot
   );
   /*
