@@ -1,27 +1,73 @@
-name: CI (humble)
+name: CI
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'
 jobs:
-  build:
+  CI:
+    permissions:
+      contents: read
+      packages: write
+      issues: read
+      checks: write
+      pull-requests: write
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:jammy
     steps:
-      - uses: actions/checkout@v4
-      - uses: ros-tooling/setup-ros@v0.7
-        with:
-          use-ros2-testing: true
-      - name: Print ls and pwd
+      - name: Prepare
         run: |
-          ls
-          pwd
-      - uses: ros-tooling/action-ros-ci@v0.3
+          mkdir -p ${{github.workspace}}/src
+      - uses: actions/checkout@v4
         with:
-          target-ros2-distro: humble
-          vcs-repo-file-url: ./needle_pantograph_ros2.repos
+          path: src/needle_pantograph_ros2
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          tags: needle_pantograph_ros2:humble
+          file: .docker/Dockerfile
+          push: false
+
+      - name: Build
+        uses: addnab/docker-run-action@v3
+        with:
+          image: needle_pantograph_ros2:humble
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            apt update
+            cd /ros/src/
+            vcs import . < needle_pantograph_ros2/needle_pantograph_ros2.repos
+            cd /ros
+            . /opt/ros/humble/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+      - name: Tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: needle_pantograph_ros2:humble
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            apt update
+            cd /ros/src/
+            vcs import . < needle_pantograph_ros2/needle_pantograph_ros2.repos
+            cd /ros
+            . /opt/ros/humble/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+            colcon test
+            colcon test-result
+
+      - name: Upload Tests to Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: build/*/test_results/*/*.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: build/*/test_results/*/*.xml
