@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import yaml
-from scipy.spatial.transform import Rotation as R
 import os
 
 # Initialize global variables to store coordinates
@@ -108,9 +107,9 @@ def triangulation(coords1, coords2, cam_1_params_path, cam_2_params_path):
     # R_2 = np.array(data_2['rectification_matrix']['data']).reshape(3, 3)
 
     if coords1 and coords2:
-        # ================================================================================================
+        # ================================================================================================  # noqa: E265
         # Triangulation
-        # ================================================================================================
+        # ================================================================================================  # noqa: E265
         print(f"Triangulating points: Image 1 -> {coords1}, Image 2 -> {coords2}")
         # Undistort points
         undistorted_pts_cam_1 = cv2.undistortPoints(coords_img1, K_1, d_1)

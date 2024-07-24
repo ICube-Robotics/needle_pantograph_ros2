@@ -4,7 +4,7 @@ import rclpy
 import rclpy.duration
 from rclpy.node import Node
 import rclpy.time
-from sensor_msgs.msg import Image
+# from sensor_msgs.msg import Image
 from geometry_msgs.msg import TransformStamped
 from cv_bridge import CvBridge
 import cv2
@@ -196,7 +196,7 @@ class StereoTracker(Node):
         # Convert to HSV color space
         frame_inv_hsv = cv2.cvtColor(frame_inv, cv2.COLOR_BGR2HSV)
 
-        # Get the current positions of the trackbars
+        # Get the current positions of the trackbars  # noqa: E265
         lower_h = cv2.getTrackbarPos('Lower H', 'Trackbars')
         lower_s = cv2.getTrackbarPos('Lower S', 'Trackbars')
         lower_v = cv2.getTrackbarPos('Lower V', 'Trackbars')
@@ -302,7 +302,7 @@ class StereoTracker(Node):
         points_4D_world = np.matmul(np.linalg.inv(T_chess_W), points_4D_chess.reshape(4, 1))
         points_3D_world = (points_4D_world[:3]/points_4D_world[3]).ravel()
 
-        # Add offset (TODO: Measure offset in CAD model)
+        # Add offset (TODO: Measure offset in CAD model) # noqa: E265
         offset = np.array([-16, -4.01, 16.73])  # in cm
         # offset = np.array([0.0, 0.0, 0.0])
         points_3D_world = points_3D_world + offset
@@ -341,10 +341,10 @@ class StereoTracker(Node):
         # ==================================================
         # Publish the needle marker transform message
         # ==================================================
-        scale_factor = 0.01  # To transform cm in m for use in rviz
+        scale_factor = 0.01  # To transform cm in m for use in rviz
         now = rclpy.time.Time()
 
-        # Read needle orientation according to model
+        # Read needle orientation according to model  # noqa: E265
         if self.tf_buffer.can_transform('panto_link_fulcrum', 'tool_phi_link', now):
             tf_PI_tool_phi = self.tf_buffer.lookup_transform('panto_link_fulcrum', 'tool_phi_link', now)
 
