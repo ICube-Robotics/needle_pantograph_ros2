@@ -1,0 +1,24 @@
+image_width: 640
+image_height: 480
+camera_name: world_to_cam_0
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1088.60442,    0.     ,  314.54243,
+            0.     , 1090.75158,  220.77703,
+            0.     ,    0.     ,    1.     ]
+distortion_model: plum_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.091006, 2.735876, -0.001135, -0.004749, -20.789586]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [ 0.02834, -0.76671,  0.64137,  4.90339,
+          0.99954,  0.02874, -0.00982,  0.97568,
+         -0.0109 ,  0.64135,  0.76717, 29.31748]
+single camera reprojection error (mean squared):
+  data: 0.29903504166474704
+stereo reprojection error (mean squared):
+  data: 0.3822677852778425

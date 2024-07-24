@@ -1,0 +1,24 @@
+image_width: 640
+image_height: 480
+camera_name: cam_1
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1066.01844,    0.     ,  300.32019,
+            0.     , 1068.37404,  235.42159,
+            0.     ,    0.     ,    1.     ]
+distortion_model: plum_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.117272, 2.996853, 0.000220, -0.011057, -22.742781]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [ -0.2089 ,  -0.04576,   0.97687, -14.41294,
+           0.02555,   0.99831,   0.05223,  -1.19696,
+          -0.9776 ,   0.03587,  -0.20738,  17.04343]
+single camera reprojection error (mean squared):
+  data: 0.23064712215628463
+stereo reprojection error (mean squared):
+  data: 0.3822677852778425

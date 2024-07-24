@@ -1,0 +1,43 @@
+# usb_cam doc : https://index.ros.org/r/usb_cam/#humble
+
+# Usage:
+- Connect first camera, check usb port with "v4l2-ctl --list-devices", change params file accordingly
+- Connect second camera, repeat previous step
+- Launch the first usb_cam node :  
+
+ros2 run usb_cam usb_cam_node_exe --ros-args --remap __ns:=/usb_cam_1 --params-file /home/telecom/dev/ws_pantograph_ros2/src/needle_pantograph_ros2/pantograph_stereo_cam/config/params_1.yaml
+
+- Launch second usb_cam node : 
+
+ros2 run usb_cam usb_cam_node_exe --ros-args --remap __ns:=/usb_cam_2 --params-file /home/telecom/dev/ws_pantograph_ros2/src/needle_pantograph_ros2/pantograph_stereo_cam/config/params_2.yaml
+
+- Run stereo calibration :
+
+old grid :
+ros2 run camera_calibration cameracalibrator --approximate 0.01 --size 7x10 --square 0.015 right:=/usb_cam_2/image_raw left:=/usb_cam_1/image_raw right_camera:=/usb_cam_2 left_camera:=/usb_cam_1 
+
+new grid : 
+ros2 run camera_calibration cameracalibrator --approximate 0.01 --size 5x7 --square 0.004  --ros-args --remap right:=/usb_cam_2/image_raw --ros-args --remap left:=/usb_cam_1/image_raw --ros-args --remap right_camera:=/usb_cam_2 --ros-args --remap left_camera:=/usb_cam_1 
+
+# Other useful commands:
+# run the executable with default settings (without params file)
+ros2 run usb_cam usb_cam_node_exe
+
+# run the executable while passing in parameters via a yaml file
+ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /home/telecom/Bureau/PFE/Camera/config/params_1.yaml
+
+# run multiple cameras at once
+ros2 run usb_cam usb_cam_node_exe --ros-args --remap __ns:=/usb_cam_1 --params-file /home/telecom/dev/ws_pantograph_ros2/src/needle_pantograph_ros2/pantograph_stereo_cam/config/params_1.yaml
+ros2 run usb_cam usb_cam_node_exe --ros-args --remap __ns:=/usb_cam_2 --params-file /home/telecom/dev/ws_pantograph_ros2/src/needle_pantograph_ros2/pantograph_stereo_cam/config/params_2.yaml
+
+# run single camera calibration
+ros2 run camera_calibration cameracalibrator --size 5x7 --square 0.004 \
+  --ros-args -r image:=/image_raw
+
+# run stereo camera calibration
+ros2 run camera_calibration cameracalibrator --approximate 0.1 --size 7x10 --square 0.015 right:=/usb_cam_2/image_raw left:=/usb_cam_1/image_raw right_camera:=/usb_cam_2 left_camera:=/usb_cam_1 
+
+calibration options : 
+--fix-principal-point
+--fix-aspect-ratio
+--zero-tangent-dist

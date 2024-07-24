@@ -61,6 +61,7 @@ def main():
     # Destroy all windows
     cv2.destroyAllWindows()
 
+
 # Define the mouse callback function
 def mouse_callback(event, x, y, flags, param):
     global coords_img1, coords_img2
@@ -72,6 +73,7 @@ def mouse_callback(event, x, y, flags, param):
         else:
             print(f"Mouse clicked at ({x - img1_width}, {y}) in Image 2")
             coords_img2 = (x - img1_width, y)
+
 
 # Function to add coordinates legend to an image
 def add_legend(image, coords, position):
@@ -85,6 +87,7 @@ def add_legend(image, coords, position):
         text_x = position[0]
         text_y = position[1] - 10
         cv2.putText(image, text, (text_x, text_y), font, font_scale, color, thickness, cv2.LINE_AA)
+
 
 def triangulation(coords1, coords2, cam_1_params_path, cam_2_params_path):
     # Extract camera parameters from yaml files

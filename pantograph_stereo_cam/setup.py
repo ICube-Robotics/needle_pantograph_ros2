@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'pantograph_pantograph_stereo_cam'
+package_name = 'pantograph_stereo_cam'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'stereo_tracker = pantograph_pantograph_stereo_cam.stereo_tracker:main',
+            'stereo_tracker = pantograph_stereo_cam.stereo_tracker:main',
         ],
     },
 )

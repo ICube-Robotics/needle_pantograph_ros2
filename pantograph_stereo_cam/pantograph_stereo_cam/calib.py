@@ -7,12 +7,13 @@ import yaml
 import os
 
 # Modified calibration script based on TemugeB program
-# For more information check Dr. Temuge GitHub: https://github.com/TemugeB/python_pantograph_pantograph_stereo_camera_calibrate
+# For more information check Dr. Temuge GitHub: https://github.com/TemugeB/python_stereo_camera_calibrate
 
-#This will contain the calibration settings from the calibration_settings.yaml file
+# This will contain the calibration settings from the calibration_settings.yaml file
 calibration_settings = {}
 
-#Given Projection matrices P1 and P2, and pixel coordinates point1 and point2, return triangulated 3D point.
+
+# Given Projection matrices P1 and P2, and pixel coordinates point1 and point2, return triangulated 3D point.
 def DLT(P1, P2, point1, point2):
 
     A = [point1[1]*P1[2,:] - P1[1,:],

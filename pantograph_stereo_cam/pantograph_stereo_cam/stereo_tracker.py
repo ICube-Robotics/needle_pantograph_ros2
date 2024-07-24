@@ -13,8 +13,8 @@ import yaml
 from scipy.spatial.transform import Rotation as R
 from tf2_ros import Buffer, TransformListener, TransformBroadcaster
 import os
-from numpy.linalg import inv
 import csv
+
 
 class StereoTracker(Node):
     def __init__(self):
@@ -44,7 +44,7 @@ class StereoTracker(Node):
         # Read stereo system params from yaml files
         dirname = os.path.dirname(__file__)
         # Camera 1
-        cam_1_params_path = os.path.join(dirname, '../../pantograph_bringup/config/pantograph_pantograph_stereo_cam/world_to_cam_0_info.yaml')
+        cam_1_params_path = os.path.join(dirname, '../config/world_to_cam_0_info.yaml')
 
         with open(cam_1_params_path) as f1:
             data_1 = yaml.safe_load(f1)
@@ -55,7 +55,7 @@ class StereoTracker(Node):
         self.img_size = [data_1['image_width'], data_1['image_height']]
 
         # Camera 2
-        cam_2_params_path = os.path.join(dirname, '../../pantograph_bringup/config/pantograph_pantograph_stereo_cam/world_to_cam_1_info.yaml')
+        cam_2_params_path = os.path.join(dirname, '../config/world_to_cam_1_info.yaml')
 
         with open(cam_2_params_path) as f2:
             data_2 = yaml.safe_load(f2)
@@ -82,7 +82,6 @@ class StereoTracker(Node):
         self.points_3D = [0, 0, 0]
         self.points_3D_world = [0, 0, 0]
         self.recorded_pts = []
-
 
     def timer_callback(self):
         ret_cam_1, frame_cam_1 = self.cap_1.read()
@@ -117,22 +116,22 @@ class StereoTracker(Node):
             # ==================================================
 
             # Blue point at the center of the detected blobs and save coordinates for display
-            if coords_cam_1 :
+            if coords_cam_1:
                 cv2.circle(frame_cam_1, coords_cam_1, 5, (255, 0, 0), -1)
                 coord_text_1 = f"Marker coords in image 1 : ({coords_cam_1[0]}, {coords_cam_1[1]})"
-            else :
-                coord_text_1 = f"Marker coords in image 1 : (unknown,unknown)"
+            else:
+                coord_text_1 = "Marker coords in image 1 : (unknown,unknown)"
 
-            if coords_cam_2 :
+            if coords_cam_2:
                 cv2.circle(frame_cam_2, coords_cam_2, 5, (255, 0, 0), -1)
                 coord_text_2 = f"Marker coords in image 2 : ({coords_cam_2[0]}, {coords_cam_2[1]})"
             else:
-                 coord_text_2 = f"Marker coords in image 2 : (unknown,unknown)"
+                coord_text_2 = "Marker coords in image 2 : (unknown,unknown)"
 
             # Set window position and size
             window_height = 960
             window_width = 1280
-            window_name = 'pantograph_pantograph_stereo_cam'
+            window_name = 'pantograph_stereo_cam'
             # cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
             cv2.moveWindow(window_name, 100, 20)
             cv2.resizeWindow(window_name, window_width, window_height)
@@ -162,7 +161,7 @@ class StereoTracker(Node):
             combined_frame[height:height * 2, width:width * 2] = mask_2_bgr
 
             # Add legends
-            cv2.putText(combined_frame, 'Camera 1 image', (width // 4, combined_height - 10 ), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(combined_frame, 'Camera 1 image', (width // 4, combined_height - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(combined_frame, 'Camera 2 image', (width + width // 4, combined_height - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
             # Add text with coordinates in image frame
@@ -188,10 +187,8 @@ class StereoTracker(Node):
                 self.recorded_pts.append(self.points_3D_world)
                 print('saving pt : ', self.points_3D_world)
                 if len(self.recorded_pts) == 30:
-                    self.save_recorded_pts()  # save points to csv file
+                    self.save_recorded_pts()  # save points to csv file
                     self.recorded_pts = []
-
-
 
     def detect_marker(self, frame):
         # Invert colors (cyan is easier to detect than red)
@@ -219,7 +216,7 @@ class StereoTracker(Node):
         detector_params.filterByConvexity = True
         detector_params.minConvexity = cv2.getTrackbarPos('Convexity', 'Trackbars')/100  # 0.87
         detector_params.filterByInertia = False
-        detector_params.minInertiaRatio = cv2.getTrackbarPos('Inertia', 'Trackbars')/100 # 0.01
+        detector_params.minInertiaRatio = cv2.getTrackbarPos('Inertia', 'Trackbars')/100  # 0.01
 
         self.detector = cv2.SimpleBlobDetector_create(detector_params)
 
@@ -231,14 +228,14 @@ class StereoTracker(Node):
         mask = cv2.inRange(frame_inv_hsv, lower_cyan, upper_cyan)
 
         # Apply Morphological operations to remove noise and fill gaps
-        kernel = np.ones((5,5),np.uint8)
+        kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
         mask = cv2.dilate(mask, kernel, iterations=1)
 
         # Detect blobs
         keypoints = self.detector.detect(mask)
 
-        # Find and return the coords of the largest blob (To further filter noice in the image)
+        # Find and return the coords of the largest blob (To further filter noise in the image)
         if keypoints:
             largest_blob = max(keypoints, key=lambda k: k.size)
             diameter = largest_blob.size
@@ -299,11 +296,11 @@ class StereoTracker(Node):
         T_chess_W = np.eye(4)
         R_chess_W = R.from_euler("zyx", [180, -90, 0], degrees=True) .as_matrix()
         t_chess_W = np.array([-15, 15, 2])  # Origin of the chessboard frame according to CAD
-        T_chess_W[:3, :3] =  R_chess_W
+        T_chess_W[:3, :3] = R_chess_W
         T_chess_W[:3, 3] = t_chess_W
 
         points_4D_world = np.matmul(np.linalg.inv(T_chess_W), points_4D_chess.reshape(4, 1))
-        points_3D_world = (points_4D_world[:3] / points_4D_world[3]).ravel()
+        points_3D_world = (points_4D_world[:3]/points_4D_world[3]).ravel()
 
         # Add offset (TODO: Measure offset in CAD model)
         offset = np.array([-16, -4.01, 16.73])  # in cm
@@ -315,7 +312,7 @@ class StereoTracker(Node):
     def save_recorded_pts(self):
         # Define the CSV file name and save directory
         dirname = os.path.dirname(__file__)
-        save_dir = os.path.join(dirname, '../../pantograph_bringup/config/pantograph_stereo_cam')
+        save_dir = os.path.join(dirname, '../config')
         csv_file = os.path.join(save_dir, 'recorded_pts.csv')
 
         # Open the CSV file in write mode
@@ -332,7 +329,7 @@ class StereoTracker(Node):
         print(f"3D points have been written to {csv_file}")
         return
 
-    def node_handle(self,points_3D):
+    def node_handle(self, points_3D):
         # ==================================================
         # Publish images
         # ==================================================
@@ -352,12 +349,12 @@ class StereoTracker(Node):
             tf_PI_tool_phi = self.tf_buffer.lookup_transform('panto_link_fulcrum', 'tool_phi_link', now)
 
             rotation = np.array([tf_PI_tool_phi.transform.rotation.x,
-                                    tf_PI_tool_phi.transform.rotation.y,
-                                    tf_PI_tool_phi.transform.rotation.z,
-                                    tf_PI_tool_phi.transform.rotation.w,])
+                                 tf_PI_tool_phi.transform.rotation.y,
+                                 tf_PI_tool_phi.transform.rotation.z,
+                                 tf_PI_tool_phi.transform.rotation.w,])
 
         else:
-            self.get_logger().info(f"Could not transform from 'panto_link_fulcrum' to 'tool_phi_link'")
+            self.get_logger().info("Could not transform from 'panto_link_fulcrum' to 'tool_phi_link'")
             rotation = np.array([0.0, 0.0, 0.0, 0.0])
 
         # Update needle_tip_marker frame
@@ -390,9 +387,8 @@ class StereoTracker(Node):
             insertion_length = np.linalg.norm(needle_vect)
 
         else:
-            self.get_logger().info(f"Could not transform from 'panto_link_fulcrum' to 'needle_tip_marker'")
+            self.get_logger().info("Could not transform from 'panto_link_fulcrum' to 'needle_tip_marker'")
             insertion_length = 0.0
-
 
         # Update P_U frame
         P_U_link_msg = TransformStamped()
@@ -401,7 +397,7 @@ class StereoTracker(Node):
         P_U_link_msg.child_frame_id = 'needle_interaction_link'
         P_U_link_msg.transform.translation.x = 0.0
         P_U_link_msg.transform.translation.y = 0.0
-        P_U_link_msg.transform.translation.z = (scale_factor * needle_lenght ) - insertion_length
+        P_U_link_msg.transform.translation.z = (scale_factor * needle_lenght) - insertion_length
         P_U_link_msg.transform.rotation.x = 0.0
         P_U_link_msg.transform.rotation.y = 0.0
         P_U_link_msg.transform.rotation.z = 0.0
@@ -409,7 +405,6 @@ class StereoTracker(Node):
 
         # Broadcast the new transform
         self.tf_broadcaster.sendTransform(P_U_link_msg)
-
 
     def quaternion_multiply(self, q1, q2):
         x1, y1, z1, w1 = q1
@@ -438,6 +433,7 @@ def main(args=None):
     rclpy.shutdown()
     node.cap_1.release()
     node.cap_2.release()
+
 
 if __name__ == '__main__':
     main()

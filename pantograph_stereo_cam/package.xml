@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>pantograph_pantograph_pantograph_stereo_cam</name>
+  <name>pantograph_stereo_cam</name>
   <version>0.0.0</version>
   <description>Stereo camera package for tracking of the needle tip</description>
   <maintainer email="lfmaldon@ens2m.org">telecom</maintainer>
