@@ -123,15 +123,23 @@ def generate_launch_description():
         arguments=['forward_effort_controller'],
     )
 
+    stereo_cam_node = Node(
+        package='stereo_cam',
+        executable='stereo_tracker',
+        name='stereo_cam_node',
+    )
+
     nodes = [
         control_node,
         rviz_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         pantograph_mimick_controller_spawner,
-        pantograph_mock_motors_controller_spawner,
-        pantograph_mock_operator_controller_spawner,
-        effort_controller_spawner,
+        # pantograph_mock_motors_controller_spawner,
+        # pantograph_mock_operator_controller_spawner,
+        # effort_controller_spawner,
+        stereo_cam_node,
+
     ]
 
     return LaunchDescription(declared_arguments + nodes)
