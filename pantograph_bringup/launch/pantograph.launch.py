@@ -14,7 +14,7 @@
 
 from launch.actions import DeclareLaunchArgument
 from launch import LaunchDescription
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition  # noqa: F401
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -105,22 +105,28 @@ def generate_launch_description():
         arguments=['pantograph_mimick_controller'],
     )
 
-    pantograph_mock_motors_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['pantograph_mock_motors_controller'],
-        condition=IfCondition(use_fake_hardware),
-    )
-    pantograph_mock_operator_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['pantograph_mock_operator_controller'],
-        condition=IfCondition(use_fake_hardware),
-    )
-    effort_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['forward_effort_controller'],
+    # pantograph_mock_motors_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['pantograph_mock_motors_controller'],
+    #     condition=IfCondition(use_fake_hardware),
+    # )
+    # pantograph_mock_operator_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['pantograph_mock_operator_controller'],
+    #     condition=IfCondition(use_fake_hardware),
+    # )
+    # effort_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['forward_effort_controller'],
+    # )
+
+    stereo_cam_node = Node(
+        package='stereo_cam',
+        executable='stereo_tracker',
+        name='stereo_cam_node',
     )
 
     nodes = [
@@ -129,9 +135,11 @@ def generate_launch_description():
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         pantograph_mimick_controller_spawner,
-        pantograph_mock_motors_controller_spawner,
-        pantograph_mock_operator_controller_spawner,
-        effort_controller_spawner,
+        # pantograph_mock_motors_controller_spawner,
+        # pantograph_mock_operator_controller_spawner,
+        # effort_controller_spawner,
+        stereo_cam_node,
+
     ]
 
     return LaunchDescription(declared_arguments + nodes)
