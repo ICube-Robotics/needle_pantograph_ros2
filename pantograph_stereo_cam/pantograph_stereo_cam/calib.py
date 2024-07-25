@@ -1,3 +1,5 @@
+# flake8: noqa: 501
+
 import cv2 as cv
 import glob
 import numpy as np
