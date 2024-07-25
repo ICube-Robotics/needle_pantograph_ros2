@@ -7,7 +7,7 @@ from rclpy.node import Node
 import rclpy.time
 # from sensor_msgs.msg import Image
 from geometry_msgs.msg import TransformStamped
-from cv_bridge import CvBridge
+# from cv_bridge import CvBridge
 import cv2
 import numpy as np
 import yaml
@@ -31,7 +31,7 @@ class StereoTracker(Node):
         # tf publisher
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        self.bridge = CvBridge()
+        # self.bridge = CvBridge()
         self.timer = self.create_timer(0.1, self.timer_callback)
 
         # Video capture
