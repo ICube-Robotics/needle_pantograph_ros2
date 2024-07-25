@@ -124,7 +124,7 @@ def generate_launch_description():
     # )
 
     stereo_cam_node = Node(
-        package='stereo_cam',
+        package='pantograph_stereo_cam',
         executable='stereo_tracker',
         name='stereo_cam_node',
     )
