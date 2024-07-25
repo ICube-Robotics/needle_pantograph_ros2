@@ -1,3 +1,5 @@
+# flake8: noqa: 501
+
 import cv2
 import numpy as np
 import yaml

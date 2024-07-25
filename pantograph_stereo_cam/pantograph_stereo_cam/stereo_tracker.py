@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa: 501
 
 import rclpy
 import rclpy.duration
