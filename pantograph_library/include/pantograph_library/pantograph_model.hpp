@@ -61,6 +61,14 @@ public:
   /// Calculate the force that the pantograph needs to apply to create a force felt by the user
   double get_panto_force(Eigen::Vector<double, 3> p, double f_guide, double alpha);
 
+  /// Differential Kinematics model of the complete system
+  Eigen::Vector3d dk_system(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> dq);
+
+  /// Coords of insertion point according to CAD
+  double PI_x = 0;
+  double PI_y = 0.16056;
+  double PI_z = 0.09;
+
 protected:
   /// First left link length in m (i.e., A1->A2)
   double l_a1_;
@@ -79,11 +87,6 @@ protected:
 
   /// Length of the needle in m
   double l_needle_ = 0.2;  //  in m
-
-  /// Coords of insertion point according to CAD
-  double PI_x = 0.0425;
-  double PI_y = 0.16056;
-  double PI_z = 0.09;
 };
 
 }  // namespace pantograph_library
