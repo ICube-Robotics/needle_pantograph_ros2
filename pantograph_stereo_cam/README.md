@@ -3,9 +3,9 @@
 
 This package adds the necessary code to use a stereo vision system with the pantograph.
 
-The Stereo vision system is composed of 2 usb cameras ([specs:](https://www.waveshare.com/ov5640-5mp-usb-camera-b.htm)) mounted to a 3D printed support, all the code is in Python and extensively uses the OpenCV library.
+The Stereo vision system is composed of 2 usb cameras ([cam specs](https://www.waveshare.com/ov5640-5mp-usb-camera-b.htm)) mounted to a 3D printed support, all the code is in Python and extensively uses the OpenCV library.
 
-The calibration of the cameras can be done using the _calib.py_ script, a modified version of the program made by Dr. T.BATPUREV, for more information check his [github](https://github.com/TemugeB/python_stereo_camera_calibrate)
+The calibration of the cameras can be done using the `calib.py` script, a modified version of the program made by Dr. T.BATPUREV, for more information check his [github](https://github.com/TemugeB/python_stereo_camera_calibrate)
 
 ## Usage
 The stereo_vision node can be launched in the ros2 launch file.

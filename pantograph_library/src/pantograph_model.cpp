@@ -58,13 +58,14 @@ PantographModel::populate_all_joint_positions(Eigen::Vector<double, 2> q)
 Eigen::Vector<double, 2>
 PantographModel::fk(Eigen::Vector<double, 2> q)
 {
-  Eigen::Vector2d P2, P3, P4, P5;
+  Eigen::Vector2d P1, P2, P3, P4, P5;
 
-  P5 << l_a5_, 0;
+  P1 << -l_a5_ / 2, 0;  // Coords of P1 in base frame
+  P5 << l_a5_ / 2, 0;  // Coords of P2 in base frame
 
   // Coords of P2 in base frame
-  P2[0] = l_a1_ * std::cos(q[0]);
-  P2[1] = l_a1_ * std::sin(q[0]);
+  P2[0] = P1[0] + l_a1_ * std::cos(q[0]);
+  P2[1] = P1[1] + l_a1_ * std::sin(q[0]);
 
   // Coords of P4 in base frame
   P4[0] = P5[0] + l_a4_ * std::cos(q[1]);
@@ -84,12 +85,12 @@ PantographModel::fk(Eigen::Vector<double, 2> q)
   double theta2 = gamma2 + delta;
 
   // Right arm
-  double gamma4 =
-    std::acos(
-    (std::pow(a24, 2) + std::pow(l_a3_, 2) - std::pow(l_a2_, 2)) /
-    (2 * a24 * l_a3_));
+  // double gamma4 =
+  //   std::acos(
+  //   (std::pow(a24, 2) + std::pow(l_a3_, 2) - std::pow(l_a2_, 2)) /
+  //   (2 * a24 * l_a3_));
 
-  double theta4 = PI_CST - gamma4 - delta;
+  // double theta4 = PI_CST - gamma4 - delta;
 
   // Coordinates of P3 according to left kinematic chain
   P3[0] = P2[0] + l_a2_ * std::cos(theta2);
@@ -101,70 +102,63 @@ PantographModel::fk(Eigen::Vector<double, 2> q)
 Eigen::Vector<double, 5>
 PantographModel::ik(Eigen::Vector<double, 2> P3)
 {
-  /* Inverse kinematics model of the pantograph, as calculated in
-  T.CESARE report. the angles thetai are used to simulate the position
+  /* Inverse kinematics model of the pantograph,
+   the angles thetai are used to simulate the position
   of the different robot segments in RViz */
   Eigen::Vector<double, 5> jnt_pos;
-  Eigen::Vector2d P2, P4, P5;
-  // Coords of P5 in base frame
-  P5 << l_a5_, 0;
+  Eigen::Vector2d P1, P5, P13, P53, x0;
+
+  P1 << -l_a5_ / 2, 0;  // Coords of P1 in base frame
+  P5 << l_a5_ / 2, 0;   // Coords of P5 in base frame
 
   // Calculate the length of the segment P1P3
-  double a13 = P3.norm();
+  P13 = P3 - P1;
+  double a13 = P13.norm();
 
   // Calculate the length of the segment P5P3
-  double a53 = (P3 - P5).norm();
+  P53 = P3 - P5;
+  double a53 = P53.norm();
 
-  // Calculate the angles of the active joints
-  // theta 1 = q[0]
+  // X axis for dot product
+  x0 << 1, 0;
+
+  // Triangle P1 P2 P3
   double alpha1 =
     std::acos(
     (std::pow(l_a1_, 2) - std::pow(l_a2_, 2) + std::pow(a13, 2)) /
     (2 * l_a1_ * a13));
-  double beta1 = std::atan2(P3[1], P3[0]);
-  jnt_pos[0] = alpha1 + beta1;
-
-  // theta5 = q[1]
-  double alpha5 = std::acos(
-    (std::pow(a53, 2) + std::pow(l_a4_, 2) - std::pow(l_a3_, 2)) /
-    (2 * a53 * l_a4_));
-  double beta5 = std::atan2(P3[1], l_a5_ - P3[0]);
-  jnt_pos[4] = -(PI_CST - alpha5 - beta5);
-
-  // Calculate the other joint angles
-  // left arm
   double alpha2 = std::acos(
     (std::pow(l_a1_, 2) + std::pow(l_a2_, 2) - std::pow(a13, 2)) /
     (2 * l_a1_ * l_a2_));
+  double alpha3 = PI_CST - alpha2 - alpha1;
 
-  // Right arm
+  // Triangle P5 P4 P3
+  double alpha5 = std::acos(
+    (std::pow(l_a4_, 2) - std::pow(l_a3_, 2) + std::pow(a53, 2)) /
+    (2 * a53 * l_a4_));
   double alpha4 = std::acos(
     (std::pow(l_a4_, 2) + std::pow(l_a3_, 2) - std::pow(a53, 2)) /
     (2 * l_a3_ * l_a4_));
-
-  // angle between the 2 arms
-  double alpha3 = PI_CST - alpha2 - alpha1;
   double alpha3bis = PI_CST - alpha4 - alpha5;
+
+  // Triangle P1 P5 P3
+  double beta1 = std::atan2(P3[1], std::abs(P13.dot(x0)));
+  double beta5 = std::atan2(P3[1], std::abs(P53.dot(x0)));
   double beta3 = PI_CST - beta1 - beta5;
-  double delta3 = alpha3 + alpha3bis + beta3;
 
-  // Calculate angle between P3 frame and tool frame
-  // in order to keep tool frame parallel to base frame
+  // // Calculate angle between P3 frame and tool frame
+  // // in order to keep tool frame parallel to base frame
+  // double delta3 = alpha3 + alpha3bis + beta3;
 
-  // Coords of P2 in base frame
-  P2[0] = l_a1_ * std::cos(jnt_pos[0]);
-  P2[1] = l_a1_ * std::sin(jnt_pos[0]);
-
-  // Coords of P4 in base frame
-  P4[0] = P5[0] + l_a4_ * std::cos(jnt_pos[4]);
-  P4[1] = P5[1] + l_a4_ * std::sin(jnt_pos[4]);
-
-  /*Return the angles of all the passive joints for Rviz render
+  /*Return the angles of all the joints for Rviz render
   angles are defined according to parent frame
   and are positive in trigonometric direction */
+
+  jnt_pos[0] = alpha1 + beta1;  // = theta1 = q[0]
   jnt_pos[1] = -(PI_CST - alpha2);   // = theta2
-  jnt_pos[2] = -(PI_CST - delta3);   // = theta3
+  jnt_pos[2] = -jnt_pos[0] - jnt_pos[1];  // -(PI_CST - delta3);
   jnt_pos[3] = (PI_CST - alpha4);  // = theta4
+  jnt_pos[4] = PI_CST - beta5 - alpha4;  // = theta5 = q[1]
 
   return jnt_pos;
 }
@@ -172,12 +166,13 @@ PantographModel::ik(Eigen::Vector<double, 2> P3)
 Eigen::Matrix<double, 2, 2>
 PantographModel::jacobian(Eigen::Vector<double, 2> q)
 {
-  Eigen::Vector2d P2, P3, P4, P5;
+  Eigen::Vector2d P1, P2, P3, P4, P5;
   P3 = fk(q);
-  P5 << l_a5_, 0;
+  P1 << -l_a5_ / 2, 0;
+  P5 << l_a5_ / 2, 0;
   // Coords of P2 in base frame
-  P2[0] = l_a1_ * std::cos(q[0]);
-  P2[1] = l_a1_ * std::sin(q[0]);
+  P2[0] = P1[0] + l_a1_ * std::cos(q[0]);
+  P2[1] = P1[1] + l_a1_ * std::sin(q[0]);
   // Coords of P4 in base frame
   P4[0] = P5[0] + l_a4_ * std::cos(q[1]);
   P4[1] = P5[1] + l_a4_ * std::sin(q[1]);
@@ -191,7 +186,14 @@ PantographModel::jacobian(Eigen::Vector<double, 2> q)
   double delta = std::atan2(P4[1] - P2[1], P4[0] - P2[0]);
 
   double theta2 = gamma2 + delta;
-  double theta4 = std::atan2(P3[1] - P4[1], P3[0] - P4[0]);
+
+  // Check math for theta4 calculation
+  // double theta4 = std::atan2(P3[1] - P4[1], P3[0] - P4[0]);
+  double gamma4 = PI_CST - std::acos(
+    (std::pow(a24, 2) + std::pow(l_a3_, 2) - std::pow(l_a2_, 2)) /
+    2 * a24 * l_a3_);
+
+  double theta4 = PI_CST - gamma4 + delta;
 
   double S14S42 = sin(q(0) - theta4) / sin(theta4 - theta2);
   double S24S42 = sin(q(1) - theta4) / sin(theta4 - theta2);
@@ -204,7 +206,7 @@ PantographModel::jacobian(Eigen::Vector<double, 2> q)
 
   Eigen::Matrix2d J;
 
-  J << J11, J21,
+  J << J11, J12,
     J21, J22;
 
   return J;
@@ -218,7 +220,7 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
   Eigen::Vector3d PI, P3, P3I, PIU, PU;
 
   // Coordinates of insertion point PI in base frame according to CAD
-  PI[0] = PI_x;  // = 0.0425;
+  PI[0] = PI_x;  // = 0;
   PI[1] = PI_y;  // = 0.16056;
   PI[2] = PI_z;  // = 0.09;
 
@@ -237,17 +239,19 @@ PantographModel::fk_system(Eigen::Vector<double, 2> q)
   // phi is the angle of rotation around y
   double theta = std::atan2(P3I[1], P3I[0]);
   double phi = std::atan2(P3I[2], std::sqrt(std::pow(P3I[0], 2) + std::pow(P3I[1], 2)));
-  double Lin = std::sqrt(std::pow(P3I[0], 2) + std::pow(P3I[1], 2) + std::pow(P3I[2], 2));
+  // double Lin = std::sqrt(std::pow(P3I[0], 2) + std::pow(P3I[1], 2) + std::pow(P3I[2], 2));
+  double Lin = PI[2] / std::sin(phi);
 
   // Calculate translation from PI to PU
   double Lout = l_needle_ - Lin;
-  PIU[0] = Lout * std::cos(phi) * std::cos(theta);  //  Coords of PU in PI frame
+  //  Coords of PU in PI frame
+  PIU[0] = Lout * std::cos(phi) * std::cos(theta);
   PIU[1] = Lout * std::cos(phi) * std::sin(theta);
-  PIU[2] = -Lout * std::sin(phi);
+  PIU[2] = Lout * std::sin(phi);
+  // PIU[2] = -Lout * std::sin(phi);
 
   // Convert coords of PU in PI frame to coords in base frame
   PU = PI + PIU;
-  // PU[2] = PU[2] - 2 * PI_z;
 
   return PU;
 }
@@ -256,17 +260,16 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
 {
   /* Inverse kinematics model of the complete system:
   computes the angles of all the joints according
-  to the cartesian position of interaction point PU*/
+  to the cartesian position of interaction point PU in base frame*/
 
   Eigen::Vector3d PI, P3, PI3, PIU;
 
   // Coords of insertion point PI in base frame according to CAD
-  PI[0] = PI_x;  // = 0.0425;
-  PI[1] = PI_y;  // = 0.16056;
-  PI[2] = PI_z;  // = 0.09;
+  PI[0] = PI_x;
+  PI[1] = PI_y;
+  PI[2] = PI_z;
 
   // Transformation of PU coords in base frame to coords in PI frame
-  // PIU = PI - PU;  // check minus sign
   PIU = PU - PI;
 
   // Get angles (in radians) of vector PIPU in PI frame
@@ -275,23 +278,19 @@ PantographModel::ik_system(Eigen::Vector<double, 3> PU)
   double theta = std::atan2(PIU[1], PIU[0]);
   double phi = std::atan2(PIU[2], std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2)));
   double Lout = std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2) + std::pow(PIU[2], 2));
-  // convert phi for the correct definition of the angle in RViz
-  phi = phi + (PI_CST / 2);
 
   // Get length of the needle segment between PI and P3
-  double Lin = l_needle_ - Lout;
+  double Lin = PI[2] / std::sin(phi);
+
+  // convert phi for the correct definition of the angle in RViz
+  phi = (PI_CST / 2) - phi;
 
   // Transformation from I to P3 in I frame
-  // PI3[0] = Lin * std::cos(phi) * std::cos(theta);
-  // PI3[1] = Lin * std::cos(phi) * std::sin(theta);
-  // PI3[2] = -Lin * std::sin(phi);
-
-  PI3[0] = PI_x + Lin * std::sin(phi) * std::cos(theta);
-  PI3[1] = PI_y + Lin * std::sin(phi) * std::sin(theta);
-  PI3[2] = PI_z - Lin * std::sin(phi);
+  PI3[0] = Lin * std::cos(phi) * std::cos(theta);
+  PI3[1] = Lin * std::cos(phi) * std::sin(theta);
+  PI3[2] = -Lin * std::sin(phi);
 
   // Transformation of P3 coords on I frame to coords in base frame
-  // P3 = PI - PI3;
   P3 = PI + PI3;
 
   // Convert P3 coords in 3D to coords in plane
@@ -319,19 +318,24 @@ PantographModel::populate_all_joint_positions_full_system(Eigen::Vector<double, 
   return ik_system(p);
 }
 
-/* Calculate force applied by the pantograph (f_mech)to create the force
-felt by the user with:
-- alpha : the angle determined by the direction
-          of the force applied by the user
-- f_guide : the desired guiding force to be felt by the user*/
+
 double
 PantographModel::get_panto_force(Eigen::Vector<double, 3> PU, double f_guide, double alpha)
 {
+  /* Calculate force applied by the pantograph (f_mech)to create the force
+  felt by the user with:
+    - alpha : the angle determined by the direction
+          of the force applied by the user
+    - f_guide : the desired guiding force to be felt by the user*/
+
   // Get all the robot joint angles IKM
   Eigen::Vector<double, 8> jnt_ext_pos;
   jnt_ext_pos = ik_system(PU);
   double theta = jnt_ext_pos[5];  // Azimuth angle
   double phi = jnt_ext_pos[6];  // Elevation angle
+
+  // Check for phi angle definition
+  phi = (PI_CST / 2) - phi;
 
   // get insertion point height
   double H = PI_z;  // = 0.09 based on insertion point coords
@@ -352,9 +356,47 @@ PantographModel::get_panto_force(Eigen::Vector<double, 3> PU, double f_guide, do
   double f_mech = f_perp / std::sqrt(1 - std::pow(cos_beta, 2));
 
   // Calculate the folt felt by the user at point PU
-  double f_user = f_perp * (l_in / l_out);
+  // double f_user = f_perp * (l_in / l_out);
 
   return f_mech;
+}
+
+Eigen::Vector3d
+PantographModel::dk_system(Eigen::Vector<double, 2> q, Eigen::Vector<double, 2> dq)
+{
+  Eigen::Vector3d P3, PU, PI, PIU;
+
+  // Get point P3 coords in 3D
+  P3 << fk(q), 0;
+
+  // Get point PU coords
+  PU = fk_system(q);
+
+  // Get theta, phi and beta1 angles
+  PI << PI_x, PI_y, PI_z;
+  PIU = PU - PI;
+
+  double theta = std::atan2(PIU[1], PIU[0]);
+  double phi = std::atan2(PIU[2], std::sqrt(std::pow(PIU[0], 2) + std::pow(PIU[1], 2)));
+  double beta1 = std::atan2(P3[1], P3[0]);
+
+  // Compute angle matrix M
+  Eigen::Matrix3d M;
+  M << 0, (beta1 + theta), 0,
+    -(beta1 + theta), 0, phi * cos(beta1),
+    0, -phi * cos(beta1), 0;
+
+  // Get jacobian of the pantograph
+  Eigen::MatrixX2d J1 = jacobian(q);
+  // Resize jacobian adding a row of zeros
+  J1.conservativeResize(J1.rows() + 1, J1.cols());
+  J1.row(J1.rows() - 1) = Eigen::RowVector2d::Zero(2);
+
+  // Compute velocity of point PU
+  Eigen::Vector3d dPU;
+  dPU = (J1 * dq) + M * (P3 - PU);
+
+  return dPU;
 }
 
 

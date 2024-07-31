@@ -53,3 +53,8 @@ ros2 run pantograph_nodes interactive_fake_operator
 sudo /etc/init.d/ethercat start  # start ETherLab daemon
 ros2 launch pantograph_bringup pantograph.launch.py use_fake_hardware:=false
 ```
+## Troubleshouting
+
+To ensure that the pantograph movement match the real robot, change the parameters of the minimal and maximal angles of the joints `panto_a1` and `panto_a5` in the [urdf description](pantograph_description/urdf/pantograph.urdf.xacro)
+If the movement of the proximal segments in the simulation does not match the real movement of the pantograph (axes are inversed), you can change the configuration of the etherCat files in the [config](pantograph_description/config) folder.
+You must inverse the sign of the value `factor` in the 4 beckhoff files.
