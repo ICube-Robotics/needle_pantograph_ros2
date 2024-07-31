@@ -15,6 +15,7 @@ from scipy.spatial.transform import Rotation as R
 from tf2_ros import Buffer, TransformListener, TransformBroadcaster
 import os
 import csv
+import math
 
 
 class StereoTracker(Node):
@@ -80,8 +81,8 @@ class StereoTracker(Node):
         cv2.createTrackbar('Inertia', 'Trackbars', 50, 100, self.nothing)
 
         # Initialization
-        self.points_3D = [0, 0, 0]
-        self.points_3D_world = [0, 0, 0]
+        self.points_3D = [0.0, 0.0, 0.0]
+        self.points_3D_world = [0.0, 0.0, 0.0]
         self.recorded_pts = []
 
     def timer_callback(self):
@@ -345,6 +346,10 @@ class StereoTracker(Node):
         scale_factor = 0.01  # To transform cm in m for use in rviz
         now = rclpy.time.Time()
 
+        for i in points_3D:
+            if math.isnan(i):
+                points_3D[i] = 0.0
+
         # Read needle orientation according to model  # noqa: E265
         if self.tf_buffer.can_transform('panto_link_fulcrum', 'tool_phi_link', now):
             tf_PI_tool_phi = self.tf_buffer.lookup_transform('panto_link_fulcrum', 'tool_phi_link', now)
@@ -370,7 +375,11 @@ class StereoTracker(Node):
         tf_marker_msg.transform.rotation.y = rotation[1]
         tf_marker_msg.transform.rotation.z = rotation[2]
         tf_marker_msg.transform.rotation.w = rotation[3]
+
+        # Broadcast transform
+        # self.log_transform(tf_marker_msg)
         self.tf_broadcaster.sendTransform(tf_marker_msg)
+
 
         # ==================================================
         # Test update needle interaction link position
@@ -395,7 +404,7 @@ class StereoTracker(Node):
         P_U_link_msg = TransformStamped()
         P_U_link_msg.header.stamp = self.get_clock().now().to_msg()
         P_U_link_msg.header.frame_id = 'tool_phi_link'
-        P_U_link_msg.child_frame_id = 'needle_interaction_link'
+        P_U_link_msg.child_frame_id = 'P_u'
         P_U_link_msg.transform.translation.x = 0.0
         P_U_link_msg.transform.translation.y = 0.0
         P_U_link_msg.transform.translation.z = (scale_factor * needle_lenght) - insertion_length
@@ -405,7 +414,20 @@ class StereoTracker(Node):
         P_U_link_msg.transform.rotation.w = 1.0
 
         # Broadcast the new transform
+        # self.log_transform(P_U_link_msg)
         self.tf_broadcaster.sendTransform(P_U_link_msg)
+
+    def log_transform(self, transform):
+        self.get_logger().info(
+            f"Sending transform from {transform.header.frame_id} to {transform.child_frame_id}: "
+            f"Translation: ({transform.transform.translation.x}, "
+            f"{transform.transform.translation.y}, "
+            f"{transform.transform.translation.z}), "
+            f"Rotation: ({transform.transform.rotation.x}, "
+            f"{transform.transform.rotation.y}, "
+            f"{transform.transform.rotation.z}, "
+            f"{transform.transform.rotation.w})"
+        )
 
     def quaternion_multiply(self, q1, q2):
         x1, y1, z1, w1 = q1
